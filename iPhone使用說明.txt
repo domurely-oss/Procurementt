@@ -1,0 +1,18 @@
+政府採購題庫練習系統－iPhone＋iPad Air 11 吋適配版
+
+【iPad Air 11 吋最佳化】
+1. iPad直向首頁採左右雙欄：左側設定、右側顯示各主題進度。
+2. iPad橫向改用左側導覽列，釋放更多垂直空間。
+3. 題目文字、選項及按鈕放大，符合平板觸控操作。
+4. 橫向作答後，題目與解析左右並排，可同時對照。
+5. 查詢結果於平板顯示為2至3欄。
+6. 學習紀錄統計卡於橫向顯示為多欄。
+7. 保留iPhone介面、指定題號、略過註記、ChatGPT與Gemini查詢功能。
+
+【GitHub Pages更新】
+解壓縮ZIP後，將index.html、manifest.webmanifest、sw.js、
+icon-192.png、icon-512.png覆蓋上傳至Repository根目錄。
+本版快取已更新為v7。
+
+【建議】
+iPad Safari可點「分享」→「加入主畫面」，以全螢幕方式使用。
