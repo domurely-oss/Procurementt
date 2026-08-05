@@ -1,9 +1,19 @@
-const CACHE='procurement-quiz-v7';
-const ASSETS=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
+const CACHE='procurement-quiz-v8';
+const ASSETS=[
+  './',
+  './index.html',
+  './firebase-config.js',
+  './firebase-sync.js',
+  './manifest.webmanifest',
+  './icon-192.png',
+  './icon-512.png'
+];
+
 self.addEventListener('install',event=>{
   self.skipWaiting();
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
 });
+
 self.addEventListener('activate',event=>{
   event.waitUntil(
     caches.keys()
@@ -11,14 +21,23 @@ self.addEventListener('activate',event=>{
       .then(()=>self.clients.claim())
   );
 });
+
 self.addEventListener('fetch',event=>{
+  const request=event.request;
+  const url=new URL(request.url);
+
+  if(request.method!=='GET'||url.origin!==self.location.origin){
+    event.respondWith(fetch(request));
+    return;
+  }
+
   event.respondWith(
-    fetch(event.request)
+    fetch(request)
       .then(response=>{
         const copy=response.clone();
-        caches.open(CACHE).then(cache=>cache.put(event.request,copy));
+        caches.open(CACHE).then(cache=>cache.put(request,copy));
         return response;
       })
-      .catch(()=>caches.match(event.request))
+      .catch(()=>caches.match(request).then(match=>match||caches.match('./index.html')))
   );
 });

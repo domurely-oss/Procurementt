@@ -808,6 +808,218 @@
       }
     }
 
+    .topbar-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .auth-open-btn{
+      min-height:42px;
+      padding:0 12px;
+      border:1px solid rgba(255,255,255,.24);
+      border-radius:14px;
+      background:rgba(255,255,255,.12);
+      color:#fff;
+      font-size:12px;
+      font-weight:850;
+      white-space:nowrap;
+    }
+    .sync-card{
+      border-color:#cfe3df;
+      background:linear-gradient(145deg,#fffdf9,#eef8f6);
+    }
+    .sync-status-row{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:12px;
+    }
+    .sync-user{
+      font-weight:900;
+      color:#274b4b;
+      line-height:1.5;
+    }
+    .sync-status{
+      margin-top:4px;
+      color:#6f7776;
+      font-size:12px;
+      line-height:1.6;
+    }
+    [data-sync-state="ok"] .sync-status{color:#267c56}
+    [data-sync-state="working"] .sync-status{color:#8b641f}
+    [data-sync-state="error"] .sync-status{color:#b24d59}
+    .sync-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:9px;
+    }
+
+    .auth-modal{
+      position:fixed;
+      inset:0;
+      z-index:100;
+      display:grid;
+      place-items:center;
+      padding:18px;
+      background:rgba(35,22,15,.58);
+      backdrop-filter:blur(8px);
+    }
+    .auth-dialog{
+      width:min(100%,480px);
+      max-height:calc(100vh - 36px);
+      overflow:auto;
+      border:1px solid #e5d8ca;
+      border-radius:24px;
+      background:#fffdf9;
+      box-shadow:0 28px 70px rgba(42,23,13,.28);
+    }
+    .auth-dialog-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:18px 18px 14px;
+      border-bottom:1px solid #eee3d7;
+      background:linear-gradient(145deg,#fff7eb,#eef8f6);
+      border-radius:24px 24px 0 0;
+    }
+    .auth-dialog-title{
+      font-size:19px;
+      font-weight:950;
+      color:#4d3425;
+    }
+    .auth-dialog-sub{
+      margin-top:4px;
+      color:#786a61;
+      font-size:12px;
+      line-height:1.55;
+    }
+    .auth-close-btn{
+      width:38px;
+      height:38px;
+      border:1px solid #dfd2c4;
+      border-radius:12px;
+      background:#fff;
+      color:#755b4b;
+      font-size:20px;
+    }
+    .auth-dialog-body{
+      padding:18px;
+    }
+    .auth-provider-btn{
+      width:100%;
+      min-height:50px;
+      border:1px solid #cddfdc;
+      border-radius:14px;
+      background:#edf8f5;
+      color:#246a61;
+      font-weight:900;
+    }
+    .auth-divider{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin:15px 0;
+      color:#9a8c82;
+      font-size:11px;
+    }
+    .auth-divider:before,
+    .auth-divider:after{
+      content:"";
+      flex:1;
+      height:1px;
+      background:#e6dbcf;
+    }
+    .auth-form{
+      display:grid;
+      gap:10px;
+    }
+    .auth-form input{
+      width:100%;
+      min-height:49px;
+      padding:0 13px;
+      border:1px solid #dfd2c4;
+      border-radius:13px;
+      background:#fff;
+      outline:none;
+    }
+    .auth-form input:focus{
+      border-color:#bc7f48;
+      box-shadow:0 0 0 3px rgba(213,139,69,.12);
+    }
+    .auth-grid-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:9px;
+    }
+    .auth-link-btn{
+      border:0;
+      background:transparent;
+      color:#75513a;
+      font-size:12px;
+      text-decoration:underline;
+    }
+    .auth-message{
+      min-height:20px;
+      margin-top:10px;
+      color:#69746f;
+      font-size:12px;
+      line-height:1.6;
+    }
+    .auth-message.error{
+      color:#b24d59;
+    }
+    .auth-user-panel{
+      display:grid;
+      gap:12px;
+    }
+    .auth-user-card{
+      padding:14px;
+      border:1px solid #d5e4e1;
+      border-radius:16px;
+      background:#f0f8f6;
+    }
+    .auth-user-name{
+      color:#274b4b;
+      font-size:17px;
+      font-weight:950;
+    }
+    .auth-user-email{
+      margin-top:4px;
+      color:#6f7776;
+      font-size:12px;
+      word-break:break-all;
+    }
+    .auth-notice{
+      padding:11px 12px;
+      border:1px solid #ead6a6;
+      border-radius:13px;
+      background:#fff7df;
+      color:#7b5b25;
+      font-size:12px;
+      line-height:1.7;
+    }
+
+    @media(max-width:520px){
+      .brand-sub{
+        max-width:170px;
+      }
+      .auth-open-btn{
+        width:43px;
+        padding:0;
+        font-size:0;
+      }
+      .auth-open-btn:before{
+        content:"☁";
+        font-size:18px;
+      }
+      .sync-actions,
+      .auth-grid-actions{
+        grid-template-columns:1fr;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -821,10 +1033,15 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">iPhone＋iPad 暖色精選詳解與 AI 查詢版</div>
+          <div class="brand-sub">iPhone＋iPad＋電腦 Firebase 跨裝置同步版</div>
         </div>
       </div>
-      <button class="icon-btn" id="shareBtn" aria-label="分享">↗</button>
+      <div class="topbar-actions">
+        <button class="auth-open-btn" type="button" data-open-auth>
+          ☁ <span data-auth-button-label>登入同步</span>
+        </button>
+        <button class="icon-btn" id="shareBtn" aria-label="分享">↗</button>
+      </div>
     </div>
   </header>
 
@@ -833,11 +1050,12 @@
       <div class="hero">
         <small>政府採購學習中心</small>
         <h1>今天想練哪一題？</h1>
-        <p>依主題逐題練習，作答後查看精選詳解與選項分析。學習紀錄只保存在這台裝置。</p>
+        <p>依主題逐題練習，作答後查看精選詳解與選項分析。登入後可在 iPhone、iPad 與電腦同步學習歷程。</p>
         <div class="chips">
           <span class="chip" id="totalChip"></span>
           <span class="chip" id="categoryChip"></span>
           <span class="chip">離線可用</span>
+          <span class="chip">登入可跨裝置同步</span>
         </div>
       </div>
 
@@ -957,6 +1175,24 @@
       </div>
       <div id="recordMetrics" class="metrics"></div>
       <div class="card" id="recordCategories"></div>
+
+      <div class="card sync-card" data-sync-state="local">
+        <div class="section-title">帳號與雲端同步</div>
+        <div class="sync-status-row">
+          <div>
+            <div class="sync-user" data-auth-user-name>尚未登入</div>
+            <div class="sync-status" data-sync-status>訪客模式：紀錄只保存在目前裝置。</div>
+            <div class="sync-status" data-last-sync></div>
+          </div>
+        </div>
+        <div class="sync-actions">
+          <button class="primary-btn" type="button" data-open-auth>
+            <span data-auth-button-label>登入同步</span>
+          </button>
+          <button class="secondary-btn" type="button" data-sync-now>立即同步</button>
+        </div>
+      </div>
+
       <div class="card">
         <div class="section-title">備份與還原</div>
         <button class="secondary-btn" id="exportBtn">匯出學習紀錄</button>
@@ -971,6 +1207,50 @@
     </section>
   </main>
 </div>
+
+
+<div id="authModal" class="auth-modal hidden" role="dialog" aria-modal="true" aria-labelledby="authDialogTitle">
+  <div class="auth-dialog">
+    <div class="auth-dialog-head">
+      <div>
+        <div class="auth-dialog-title" id="authDialogTitle">登入與跨裝置同步</div>
+        <div class="auth-dialog-sub">同一帳號可在 iPhone、iPad 與電腦共用學習歷程。</div>
+      </div>
+      <button class="auth-close-btn" id="closeAuthBtn" type="button" aria-label="關閉">×</button>
+    </div>
+    <div class="auth-dialog-body">
+      <div data-auth-guest>
+        <button class="auth-provider-btn" id="googleLoginBtn" type="button">使用 Google 帳號登入</button>
+        <div class="auth-divider">或使用電子郵件</div>
+        <div class="auth-form">
+          <input id="authEmail" type="email" inputmode="email" autocomplete="email" placeholder="電子郵件">
+          <input id="authPassword" type="password" autocomplete="current-password" placeholder="密碼（至少6個字元）">
+          <div class="auth-grid-actions">
+            <button class="primary-btn" id="emailLoginBtn" type="button">登入</button>
+            <button class="secondary-btn" id="emailRegisterBtn" type="button">建立帳號</button>
+          </div>
+          <button class="auth-link-btn" id="passwordResetBtn" type="button">忘記密碼／寄送重設信</button>
+        </div>
+      </div>
+
+      <div class="auth-user-panel hidden" data-auth-user>
+        <div class="auth-user-card">
+          <div class="auth-user-name" data-auth-user-name>已登入使用者</div>
+          <div class="auth-user-email" data-auth-user-email></div>
+        </div>
+        <div class="auth-notice">
+          作答、略過與收藏會先保存在本機；有網路時自動同步至 Firestore。
+          不同裝置登入同一帳號後，系統會依各題最後更新時間合併紀錄。
+        </div>
+        <button class="primary-btn" type="button" data-sync-now>立即同步</button>
+        <button class="secondary-btn" type="button" data-logout>登出</button>
+      </div>
+
+      <div class="auth-message" id="authMessage"></div>
+    </div>
+  </div>
+</div>
+
 
 <nav class="bottom-nav">
   <div class="bottom-nav-inner">
@@ -1008,8 +1288,17 @@ const labelType=t=>t==="choice"?"選擇題":"是非題";
 function loadJSON(key,fallback){
   try{const v=localStorage.getItem(key);return v?JSON.parse(v):fallback}catch{return fallback}
 }
-function saveProgress(){localStorage.setItem(STORAGE_KEY,JSON.stringify(progress))}
-function saveSession(){localStorage.setItem(SESSION_KEY,JSON.stringify(session))}
+function saveProgress(){
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(progress));
+  window.firebaseQuizSync?.queueProgressSync?.(progress)
+}
+function saveSession(){
+  if(session&&typeof session==="object"){
+    session={...session,updatedAtMs:Date.now()}
+  }
+  localStorage.setItem(SESSION_KEY,JSON.stringify(session));
+  window.firebaseQuizSync?.queueSessionSync?.(session)
+}
 function toast(msg){
   const t=$("toast");t.textContent=msg;t.classList.add("show");
   clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>t.classList.remove("show"),1800)
@@ -1334,7 +1623,7 @@ function submitAnswer(){
     wrong:(p.wrong||0)+(isCorrect?0:1),
     skipped:p.skipped||0,
     lastAnswer:selectedAnswer,lastCorrect:isCorrect,lastAction:"answered",
-    favorite:!!p.favorite
+    favorite:!!p.favorite,updatedAtMs:Date.now()
   };
   saveProgress();answered=true;
   document.querySelectorAll(".option-btn").forEach(b=>{
@@ -1427,7 +1716,8 @@ function skipQuestion(){
     ...p,
     skipped:(p.skipped||0)+1,
     lastAction:"skipped",
-    favorite:!!p.favorite
+    favorite:!!p.favorite,
+    updatedAtMs:Date.now()
   };
   saveProgress();
 
@@ -1460,7 +1750,7 @@ function prevQuestion(){
 function toggleFavorite(){
   const q=currentQuestion();if(!q)return;
   const p=questionProgress(q);
-  progress[q.id]={...p,favorite:!p.favorite};
+  progress[q.id]={...p,favorite:!p.favorite,updatedAtMs:Date.now()};
   saveProgress();$("favoriteBtn").textContent=progress[q.id].favorite?"★ 已收藏":"☆ 收藏";
   toast(progress[q.id].favorite?"已加入收藏":"已取消收藏")
 }
@@ -1537,14 +1827,21 @@ function importProgress(e){
     try{
       const data=JSON.parse(reader.result);
       if(!data.progress||typeof data.progress!=="object")throw new Error();
-      progress=data.progress;saveProgress();renderHome();renderRecords();toast("學習紀錄已匯入")
+      const importedAt=Date.now();
+      progress=Object.fromEntries(
+        Object.entries(data.progress).map(([id,item])=>[
+          id,
+          {...item,updatedAtMs:Number(item?.updatedAtMs||importedAt)}
+        ])
+      );
+      saveProgress();renderHome();renderRecords();toast("學習紀錄已匯入")
     }catch{alert("檔案格式不正確")}
     e.target.value=""
   };
   reader.readAsText(file)
 }
 function resetProgress(){
-  if(!confirm("確定清除全部作答、略過、錯題與收藏紀錄？此動作無法復原。"))return;
+  if(!confirm("確定清除全部作答、略過、錯題與收藏紀錄？登入狀態下也會同步刪除雲端紀錄，此動作無法復原。"))return;
   progress={};saveProgress();renderHome();renderRecords();toast("已清除全部紀錄")
 }
 async function shareApp(){
@@ -1555,10 +1852,29 @@ async function shareApp(){
   }catch{}
 }
 
+window.quizSyncBridge={
+  getProgress:()=>JSON.parse(JSON.stringify(progress||{})),
+  replaceProgress:(next)=>{
+    progress=next&&typeof next==="object"?next:{};
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(progress));
+    renderHome();
+    renderRecords();
+    if(document.getElementById("searchView")?.classList.contains("active"))runSearch()
+  },
+  getSession:()=>session?JSON.parse(JSON.stringify(session)):null,
+  replaceSession:(next)=>{
+    session=next&&typeof next==="object"?next:null;
+    localStorage.setItem(SESSION_KEY,JSON.stringify(session))
+  },
+  toast
+};
+
 init();
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
   navigator.serviceWorker.register("sw.js").catch(()=>{})
 }
 </script>
+<script src="./firebase-config.js"></script>
+<script type="module" src="./firebase-sync.js"></script>
 </body>
 </html>
