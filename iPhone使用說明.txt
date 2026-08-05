@@ -22,3 +22,8 @@ Authentication 授權網域：domurely-oss.github.io
 
 注意：仍需在 Firebase Console 啟用登入方式、建立 Firestore，
 並發布本套件內的 firestore.rules。
+
+
+【同步修正 v10】
+登入後可使用「測試 Firebase 連線」確認 Firestore 是否可正常讀寫。
+立即同步會顯示進度、成功時間或具體錯誤原因。

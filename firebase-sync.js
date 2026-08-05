@@ -75,6 +75,59 @@ function setSyncState(message, kind = "idle") {
   });
 }
 
+function setSyncButtonsBusy(busy, label = "立即同步") {
+  all("[data-sync-now]").forEach((button) => {
+    button.disabled = busy;
+    button.setAttribute("aria-busy", busy ? "true" : "false");
+    const labelNode = button.querySelector("[data-sync-button-label]");
+    if (labelNode) {
+      labelNode.textContent = busy ? "同步中…" : label;
+    } else {
+      button.textContent = busy ? "同步中…" : label;
+    }
+  });
+}
+
+function friendlyFirebaseError(error) {
+  const code = String(error?.code || "");
+  const message = String(error?.message || "");
+
+  if (code.includes("permission-denied") || message.includes("Missing or insufficient permissions")) {
+    return "Firestore 權限不足。請確認已建立 Firestore Database，並已發布 ZIP 內的 firestore.rules。";
+  }
+  if (code.includes("unavailable") || message.includes("offline")) {
+    return "目前無法連線 Firestore，請檢查網路後再試。";
+  }
+  if (code.includes("unauthenticated")) {
+    return "登入狀態已失效，請登出後重新登入。";
+  }
+  if (code.includes("failed-precondition")) {
+    return "Firestore 尚未完成設定，請確認資料庫已建立。";
+  }
+  if (code.includes("quota-exceeded") || code.includes("resource-exhausted")) {
+    return "Firebase 使用量已達限制，請稍後再試或檢查專案配額。";
+  }
+  if (message.includes("deadline") || message.includes("逾時")) {
+    return "同步逾時，請檢查網路或 Firebase 設定後重試。";
+  }
+  return message || "同步時發生未知錯誤。";
+}
+
+function withTimeout(promise, milliseconds, label) {
+  let timer = null;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => {
+      const error = new Error(`${label}逾時`);
+      error.code = "sync/deadline-exceeded";
+      reject(error);
+    }, milliseconds);
+  });
+
+  return Promise.race([promise, timeout]).finally(() => {
+    if (timer) clearTimeout(timer);
+  });
+}
+
 function formatUser(user) {
   return user?.displayName || user?.email || "已登入使用者";
 }
@@ -279,17 +332,51 @@ async function writeProfile(user) {
 }
 
 async function syncAll(showMessage = true) {
-  if (!currentUser || !db || syncing) return;
+  const user = currentUser || auth?.currentUser || null;
+
+  if (!user) {
+    const message = "尚未登入，請先登入後再同步。";
+    setSyncState(message, "error");
+    showAuthMessage(message, true);
+    bridge?.toast?.(message);
+    openAuthModal();
+    return false;
+  }
+
+  if (!db) {
+    const message = "Firestore 尚未初始化，請重新整理網頁後再試。";
+    setSyncState(message, "error");
+    showAuthMessage(message, true);
+    bridge?.toast?.(message);
+    return false;
+  }
+
+  if (syncing) {
+    const message = "同步正在進行中，請稍候。";
+    setSyncState(message, "working");
+    showAuthMessage(message);
+    bridge?.toast?.(message);
+    return false;
+  }
 
   syncing = true;
-  setSyncState("正在合併本機與雲端紀錄…", "working");
+  setSyncButtonsBusy(true);
+  setSyncState("正在讀取雲端學習紀錄…", "working");
+  showAuthMessage("正在讀取雲端學習紀錄…");
 
   try {
-    await Promise.all([
-      loadAndMergeProgress(currentUser),
-      loadAndMergeSession(currentUser),
-      writeProfile(currentUser)
-    ]);
+    await withTimeout(loadAndMergeProgress(user), 25000, "題目紀錄同步");
+    setSyncState("正在同步目前練習位置…", "working");
+    showAuthMessage("題目紀錄完成，正在同步練習位置…");
+
+    await withTimeout(loadAndMergeSession(user), 15000, "練習位置同步");
+    setSyncState("正在更新帳號同步資訊…", "working");
+
+    try {
+      await withTimeout(writeProfile(user), 12000, "帳號資訊更新");
+    } catch (profileError) {
+      console.warn("Profile update skipped:", profileError);
+    }
 
     const time = new Date().toLocaleTimeString("zh-TW", {
       hour: "2-digit",
@@ -298,16 +385,22 @@ async function syncAll(showMessage = true) {
 
     setSyncState(`已同步・${time}`, "ok");
     setText("[data-last-sync]", `最後同步：${time}`);
+    showAuthMessage(`同步完成・${time}`);
     if (showMessage) bridge?.toast?.("雲端學習紀錄同步完成");
+    return true;
   } catch (error) {
-    console.error(error);
-    const message = navigator.onLine
-      ? `同步失敗：${error?.message || "請稍後再試"}`
+    console.error("Firebase sync failed:", error);
+    const detail = navigator.onLine
+      ? friendlyFirebaseError(error)
       : "目前離線，紀錄已保存在本機，恢復網路後再同步。";
+    const message = `同步失敗：${detail}`;
     setSyncState(message, "error");
     showAuthMessage(message, true);
+    bridge?.toast?.("同步失敗，請查看登入視窗中的說明");
+    return false;
   } finally {
     syncing = false;
+    setSyncButtonsBusy(false);
   }
 }
 
@@ -401,6 +494,78 @@ function queueProgressSync() {
 function queueSessionSync() {
   clearTimeout(sessionTimer);
   sessionTimer = setTimeout(flushSession, 850);
+}
+
+async function testFirebaseConnection() {
+  const user = currentUser || auth?.currentUser || null;
+
+  if (!user) {
+    const message = "請先登入，再測試 Firebase 連線。";
+    showAuthMessage(message, true);
+    setSyncState(message, "error");
+    openAuthModal();
+    return false;
+  }
+
+  if (!db) {
+    const message = "Firestore 尚未初始化，請重新整理網頁。";
+    showAuthMessage(message, true);
+    setSyncState(message, "error");
+    return false;
+  }
+
+  all("[data-test-firebase]").forEach((button) => {
+    button.disabled = true;
+    button.textContent = "測試中…";
+  });
+
+  setSyncState("正在測試 Firestore 寫入與讀取…", "working");
+  showAuthMessage("正在測試 Firestore 寫入與讀取…");
+
+  const reference = doc(db, "users", user.uid, "state", "diagnostic");
+
+  try {
+    const token = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+    await withTimeout(
+      setDoc(reference, {
+        token,
+        checkedAtMs: Date.now()
+      }, { merge: true }),
+      15000,
+      "Firestore 寫入測試"
+    );
+
+    const snapshot = await withTimeout(
+      getDoc(reference),
+      15000,
+      "Firestore 讀取測試"
+    );
+
+    if (!snapshot.exists() || snapshot.data()?.token !== token) {
+      throw new Error("Firestore 測試資料讀回不一致");
+    }
+
+    await deleteDoc(reference).catch(() => null);
+
+    const message = "Firebase 連線正常：登入、Firestore 寫入與讀取均成功。";
+    setSyncState(message, "ok");
+    showAuthMessage(message);
+    bridge?.toast?.("Firebase 連線測試成功");
+    return true;
+  } catch (error) {
+    console.error("Firebase diagnostic failed:", error);
+    const message = `Firebase 測試失敗：${friendlyFirebaseError(error)}`;
+    setSyncState(message, "error");
+    showAuthMessage(message, true);
+    bridge?.toast?.("Firebase 連線測試失敗");
+    return false;
+  } finally {
+    all("[data-test-firebase]").forEach((button) => {
+      button.disabled = false;
+      button.textContent = "測試 Firebase 連線";
+    });
+  }
 }
 
 window.firebaseQuizSync = {
@@ -508,7 +673,19 @@ function bindUi() {
   );
 
   all("[data-sync-now]").forEach((button) => {
-    button.addEventListener("click", () => syncAll(true));
+    button.addEventListener("click", async (event) => {
+      event.preventDefault();
+      showAuthMessage("已收到同步指令，準備同步…");
+      setSyncState("已收到同步指令，準備同步…", "working");
+      await syncAll(true);
+    });
+  });
+
+  all("[data-test-firebase]").forEach((button) => {
+    button.addEventListener("click", async (event) => {
+      event.preventDefault();
+      await testFirebaseConnection();
+    });
   });
 
   all("[data-logout]").forEach((button) => {
@@ -547,8 +724,12 @@ if (!configured()) {
 
       if (user) {
         showAuthMessage("登入成功，正在同步學習紀錄。");
-        await syncAll(false);
-        closeAuthModal();
+        const success = await syncAll(false);
+        if (success) {
+          closeAuthModal();
+        } else {
+          openAuthModal();
+        }
       } else {
         progressShadow = {};
         sessionShadow = null;

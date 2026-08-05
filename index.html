@@ -1000,6 +1000,25 @@
       font-size:12px;
       line-height:1.7;
     }
+    .auth-sync-feedback{
+      padding:12px;
+      border:1px solid #d5e4e1;
+      border-radius:14px;
+      background:#f3faf8;
+    }
+    .auth-sync-feedback[data-sync-state="working"]{
+      border-color:#ead6a6;
+      background:#fff8e7;
+    }
+    .auth-sync-feedback[data-sync-state="error"]{
+      border-color:#efc8cd;
+      background:#fff2f3;
+    }
+    [data-sync-now]:disabled,
+    [data-test-firebase]:disabled{
+      cursor:wait;
+      opacity:.62;
+    }
 
     @media(max-width:520px){
       .brand-sub{
@@ -1033,7 +1052,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">iPhone＋iPad＋電腦 Firebase 跨裝置同步版（已設定）</div>
+          <div class="brand-sub">iPhone＋iPad＋電腦 Firebase 跨裝置同步修正版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -1189,7 +1208,10 @@
           <button class="primary-btn" type="button" data-open-auth>
             <span data-auth-button-label>登入同步</span>
           </button>
-          <button class="secondary-btn" type="button" data-sync-now>立即同步</button>
+          <button class="secondary-btn" type="button" data-sync-now>
+            <span data-sync-button-label>立即同步</span>
+          </button>
+          <button class="secondary-btn" type="button" data-test-firebase>測試 Firebase 連線</button>
         </div>
       </div>
 
@@ -1242,7 +1264,14 @@
           作答、略過與收藏會先保存在本機；有網路時自動同步至 Firestore。
           不同裝置登入同一帳號後，系統會依各題最後更新時間合併紀錄。
         </div>
-        <button class="primary-btn" type="button" data-sync-now>立即同步</button>
+        <div class="auth-sync-feedback" data-sync-state="idle">
+          <div class="sync-status" data-sync-status>已登入，尚未開始同步。</div>
+          <div class="sync-status" data-last-sync></div>
+        </div>
+        <button class="primary-btn" type="button" data-sync-now>
+          <span data-sync-button-label>立即同步</span>
+        </button>
+        <button class="secondary-btn" type="button" data-test-firebase>測試 Firebase 連線</button>
         <button class="secondary-btn" type="button" data-logout>登出</button>
       </div>
 
