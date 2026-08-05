@@ -1,3 +1,21 @@
+已套用本次 Firebase 設定
+========================
+Firebase Project ID：
+procurementt
+
+GitHub Pages 網址：
+https://domurely-oss.github.io/Procurementt/
+
+Authentication 授權網域必須加入：
+domurely-oss.github.io
+
+firebase-config.js 已完成填入，無須再次修改。
+仍需在 Firebase Console 完成：
+1. 啟用 Authentication 的 Google 登入或電子郵件／密碼登入。
+2. 將 domurely-oss.github.io 加入 Authorized domains。
+3. 建立 Firestore Database。
+4. 發布 firestore.rules。
+
 政府採購題庫練習系統
 Firebase Authentication＋Firestore 跨裝置同步設定步驟
 
