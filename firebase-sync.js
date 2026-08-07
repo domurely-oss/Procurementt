@@ -39,6 +39,8 @@ let sessionShadow = null;
 let progressTimer = null;
 let sessionTimer = null;
 
+const GEMINI_NOTE_STORAGE_KEY = "procurement_quiz_gemini_notes_v1";
+
 function clone(value) {
   return value == null ? value : JSON.parse(JSON.stringify(value));
 }
@@ -108,7 +110,7 @@ function friendlyFirebaseError(error) {
     return "Firebase 使用量已達限制，請稍後再試或檢查專案配額。";
   }
   if (message.includes("deadline") || message.includes("逾時")) {
-    return "同步逾時，請檢查網路或 Firebase 設定後重試。";
+    return "同步逾時。首次上傳大量舊紀錄時可能需要1至3分鐘；請保持畫面開啟並重新按立即同步。若「測試 Firebase 連線」也失敗，請再檢查 Firestore 與網路設定。";
   }
   return message || "同步時發生未知錯誤。";
 }
@@ -198,10 +200,17 @@ function sameValue(a, b) {
   return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 }
 
-async function commitOperations(operations) {
-  for (let start = 0; start < operations.length; start += 400) {
+async function commitOperations(operations, progressLabel = "正在同步") {
+  if (!operations.length) return;
+
+  const batchSize = 180;
+  const totalBatches = Math.ceil(operations.length / batchSize);
+
+  for (let start = 0, batchIndex = 0;
+       start < operations.length;
+       start += batchSize, batchIndex++) {
     const batch = writeBatch(db);
-    const chunk = operations.slice(start, start + 400);
+    const chunk = operations.slice(start, start + batchSize);
 
     chunk.forEach((operation) => {
       if (operation.type === "set") {
@@ -211,7 +220,26 @@ async function commitOperations(operations) {
       }
     });
 
-    await batch.commit();
+    const doneBefore = Math.min(start, operations.length);
+    setSyncState(
+      `${progressLabel}：${doneBefore}/${operations.length} 筆（第 ${batchIndex + 1}/${totalBatches} 批）`,
+      "working"
+    );
+
+    await withTimeout(
+      batch.commit(),
+      45000,
+      `第 ${batchIndex + 1} 批 Firestore 寫入`
+    );
+
+    const doneAfter = Math.min(start + chunk.length, operations.length);
+    setSyncState(
+      `${progressLabel}：${doneAfter}/${operations.length} 筆`,
+      "working"
+    );
+
+    // 讓 iPhone／iPad UI 有機會更新，不要看起來像卡住。
+    await new Promise((resolve) => setTimeout(resolve, 80));
   }
 }
 
@@ -281,7 +309,11 @@ async function loadAndMergeProgress(user) {
   });
 
   if (operations.length) {
-    await commitOperations(operations);
+    setSyncState(
+      `偵測到 ${operations.length} 筆本機紀錄需要上傳，初次同步可能需要較久。`,
+      "working"
+    );
+    await commitOperations(operations, "正在上傳學習紀錄");
   }
 
   bridge?.replaceProgress?.(merged);
@@ -318,6 +350,279 @@ async function loadAndMergeSession(user) {
   sessionShadow = clone(chosen);
 }
 
+function readLocalGeminiNotes() {
+  try {
+    const raw = localStorage.getItem(GEMINI_NOTE_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch (error) {
+    console.warn("Unable to read local Gemini notes:", error);
+    return {};
+  }
+}
+
+function writeLocalGeminiNotes(notes) {
+  localStorage.setItem(
+    GEMINI_NOTE_STORAGE_KEY,
+    JSON.stringify(notes && typeof notes === "object" ? notes : {})
+  );
+}
+
+function normalizeGeminiNote(note, questionId = "") {
+  const item = note && typeof note === "object" ? note : {};
+  return {
+    questionId: String(item.questionId || questionId),
+    text: String(item.text || ""),
+    deleted: Boolean(item.deleted),
+    updatedAtMs: Number(item.updatedAtMs || 0)
+  };
+}
+
+async function syncGeminiNotes(user) {
+  if (!user || !db) return;
+
+  const localRaw = readLocalGeminiNotes();
+  const remoteSnapshot = await getDocs(
+    collection(db, "users", user.uid, "geminiNotes")
+  );
+
+  const remoteRaw = {};
+  remoteSnapshot.forEach((snapshot) => {
+    remoteRaw[snapshot.id] = normalizeGeminiNote(
+      snapshot.data(),
+      snapshot.id
+    );
+  });
+
+  const merged = {};
+  const operations = [];
+  const ids = new Set([
+    ...Object.keys(localRaw),
+    ...Object.keys(remoteRaw)
+  ]);
+
+  ids.forEach((questionId) => {
+    const local = Object.prototype.hasOwnProperty.call(localRaw, questionId)
+      ? normalizeGeminiNote(localRaw[questionId], questionId)
+      : null;
+    const remote = Object.prototype.hasOwnProperty.call(remoteRaw, questionId)
+      ? normalizeGeminiNote(remoteRaw[questionId], questionId)
+      : null;
+
+    let selected = null;
+    let selectedFromLocal = false;
+
+    if (local && remote) {
+      if (local.updatedAtMs >= remote.updatedAtMs) {
+        selected = local;
+        selectedFromLocal = true;
+      } else {
+        selected = remote;
+      }
+    } else if (local) {
+      selected = local;
+      selectedFromLocal = true;
+    } else if (remote) {
+      selected = remote;
+    }
+
+    if (!selected) return;
+
+    if (!selected.updatedAtMs) {
+      selected = {
+        ...selected,
+        updatedAtMs: Date.now()
+      };
+      selectedFromLocal = true;
+    }
+
+    merged[questionId] = selected;
+
+    if (
+      selectedFromLocal &&
+      (!remote || !sameValue(selected, remote))
+    ) {
+      operations.push({
+        type: "set",
+        ref: doc(
+          db,
+          "users",
+          user.uid,
+          "geminiNotes",
+          questionId
+        ),
+        data: {
+          ...selected,
+          updatedAt: serverTimestamp()
+        }
+      });
+    }
+  });
+
+  writeLocalGeminiNotes(merged);
+
+  if (operations.length) {
+    await commitOperations(operations, "正在同步 Gemini 個人筆記");
+  }
+}
+
+async function getGeminiNote(questionId) {
+  const id = String(questionId || "").trim();
+  if (!id) return null;
+
+  const localNotes = readLocalGeminiNotes();
+  let local = Object.prototype.hasOwnProperty.call(localNotes, id)
+    ? normalizeGeminiNote(localNotes[id], id)
+    : null;
+
+  const user = currentUser || auth?.currentUser || null;
+
+  if (!user || !db || !navigator.onLine) {
+    return local && !local.deleted ? clone(local) : null;
+  }
+
+  try {
+    const reference = doc(
+      db,
+      "users",
+      user.uid,
+      "geminiNotes",
+      id
+    );
+    const snapshot = await getDoc(reference);
+    const remote = snapshot.exists()
+      ? normalizeGeminiNote(snapshot.data(), id)
+      : null;
+
+    let selected = local;
+    let uploadLocal = false;
+
+    if (local && remote) {
+      if (local.updatedAtMs >= remote.updatedAtMs) {
+        selected = local;
+        uploadLocal = !sameValue(local, remote);
+      } else {
+        selected = remote;
+      }
+    } else if (local) {
+      selected = local;
+      uploadLocal = true;
+    } else if (remote) {
+      selected = remote;
+    }
+
+    if (selected) {
+      localNotes[id] = selected;
+      writeLocalGeminiNotes(localNotes);
+    }
+
+    if (uploadLocal && selected) {
+      await setDoc(
+        reference,
+        {
+          ...selected,
+          updatedAt: serverTimestamp()
+        },
+        { merge: true }
+      );
+    }
+
+    return selected && !selected.deleted ? clone(selected) : null;
+  } catch (error) {
+    console.warn("Unable to load Gemini note from Firestore:", error);
+    return local && !local.deleted ? clone(local) : null;
+  }
+}
+
+async function saveGeminiNote(questionId, text) {
+  const id = String(questionId || "").trim();
+  const content = String(text || "").trim();
+
+  if (!id) {
+    throw new Error("找不到目前題目編號。");
+  }
+  if (!content) {
+    throw new Error("請先貼上 Gemini 分析內容。");
+  }
+  if (content.length > 100000) {
+    throw new Error("筆記內容過長，請縮短至 100,000 字以內。");
+  }
+
+  const note = {
+    questionId: id,
+    text: content,
+    deleted: false,
+    updatedAtMs: Date.now()
+  };
+
+  const localNotes = readLocalGeminiNotes();
+  localNotes[id] = note;
+  writeLocalGeminiNotes(localNotes);
+
+  const user = currentUser || auth?.currentUser || null;
+
+  if (user && db && navigator.onLine) {
+    await setDoc(
+      doc(db, "users", user.uid, "geminiNotes", id),
+      {
+        ...note,
+        updatedAt: serverTimestamp()
+      },
+      { merge: true }
+    );
+
+    return {
+      ...clone(note),
+      location: "cloud"
+    };
+  }
+
+  return {
+    ...clone(note),
+    location: "local"
+  };
+}
+
+async function deleteGeminiNote(questionId) {
+  const id = String(questionId || "").trim();
+
+  if (!id) {
+    throw new Error("找不到目前題目編號。");
+  }
+
+  /*
+    使用刪除標記而非直接移除文件，避免不同裝置離線時，
+    舊筆記在下次同步時又被還原。
+  */
+  const tombstone = {
+    questionId: id,
+    text: "",
+    deleted: true,
+    updatedAtMs: Date.now()
+  };
+
+  const localNotes = readLocalGeminiNotes();
+  localNotes[id] = tombstone;
+  writeLocalGeminiNotes(localNotes);
+
+  const user = currentUser || auth?.currentUser || null;
+
+  if (user && db && navigator.onLine) {
+    await setDoc(
+      doc(db, "users", user.uid, "geminiNotes", id),
+      {
+        ...tombstone,
+        updatedAt: serverTimestamp()
+      },
+      { merge: true }
+    );
+
+    return { location: "cloud" };
+  }
+
+  return { location: "local" };
+}
+
 async function writeProfile(user) {
   await setDoc(
     doc(db, "users", user.uid),
@@ -325,7 +630,7 @@ async function writeProfile(user) {
       displayName: user.displayName || "",
       email: user.email || "",
       lastLoginAt: serverTimestamp(),
-      appVersion: "firebase-sync-v1"
+      appVersion: "firebase-no-api-gemini-notes-v13"
     },
     { merge: true }
   );
@@ -365,11 +670,16 @@ async function syncAll(showMessage = true) {
   showAuthMessage("正在讀取雲端學習紀錄…");
 
   try {
-    await withTimeout(loadAndMergeProgress(user), 25000, "題目紀錄同步");
+    await withTimeout(loadAndMergeProgress(user), 180000, "題目紀錄同步");
     setSyncState("正在同步目前練習位置…", "working");
     showAuthMessage("題目紀錄完成，正在同步練習位置…");
 
-    await withTimeout(loadAndMergeSession(user), 15000, "練習位置同步");
+    await withTimeout(loadAndMergeSession(user), 45000, "練習位置同步");
+
+    setSyncState("正在同步 Gemini 個人筆記…", "working");
+    showAuthMessage("正在同步 Gemini 個人筆記…");
+    await withTimeout(syncGeminiNotes(user), 90000, "Gemini 個人筆記同步");
+
     setSyncState("正在更新帳號同步資訊…", "working");
 
     try {
@@ -451,7 +761,7 @@ async function flushProgress() {
 
   try {
     setSyncState("正在上傳最新作答紀錄…", "working");
-    await commitOperations(operations);
+    await commitOperations(operations, "正在自動上傳");
     progressShadow = clone(current);
     setSyncState("已自動同步", "ok");
   } catch (error) {
@@ -572,7 +882,10 @@ window.firebaseQuizSync = {
   queueProgressSync,
   queueSessionSync,
   syncNow: () => syncAll(true),
-  isSignedIn: () => Boolean(currentUser)
+  isSignedIn: () => Boolean(currentUser || auth?.currentUser),
+  getGeminiNote,
+  saveGeminiNote,
+  deleteGeminiNote
 };
 
 function bindUi() {

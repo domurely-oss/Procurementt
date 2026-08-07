@@ -1039,6 +1039,66 @@
       }
     }
 
+    .gemini-note-box{
+      margin-top:13px;padding:15px;border:1px solid #c9d8ec;border-radius:18px;
+      background:linear-gradient(145deg,#f9fbff,#eef4ff)
+    }
+    .gemini-note-title{
+      display:flex;align-items:center;gap:8px;
+      color:#315889;font-size:16px;font-weight:950
+    }
+    .gemini-note-steps{
+      margin:7px 0 12px;color:#64758c;font-size:12px;line-height:1.72
+    }
+    .gemini-note-actions{
+      display:grid;grid-template-columns:1fr 1fr;gap:9px
+    }
+    .gemini-note-btn{
+      min-height:46px;padding:9px 11px;border-radius:14px;
+      font-size:13px;font-weight:900
+    }
+    .gemini-note-btn.open{
+      color:#fff;border:1px solid #5c70b1;
+      background:linear-gradient(135deg,#4c75bd,#725cae)
+    }
+    .gemini-note-btn.paste{
+      color:#345b91;border:1px solid #b9cbe5;background:#fff
+    }
+    .gemini-note-textarea{
+      width:100%;min-height:190px;margin-top:11px;padding:13px;
+      resize:vertical;border:1px solid #c9d6e8;border-radius:14px;
+      background:#fff;color:#33445d;font:inherit;font-size:14px;line-height:1.8;
+      outline:none
+    }
+    .gemini-note-textarea:focus{
+      border-color:#7189bd;box-shadow:0 0 0 3px rgba(91,117,175,.12)
+    }
+    .gemini-note-footer{
+      display:grid;grid-template-columns:1fr auto;gap:9px;margin-top:9px
+    }
+    .gemini-note-save{
+      min-height:45px;border:1px solid #8fc7b3;border-radius:13px;
+      background:#eaf8f3;color:#246f5b;font-weight:900
+    }
+    .gemini-note-delete{
+      min-height:45px;padding:0 14px;border:1px solid #e2bdc3;border-radius:13px;
+      background:#fff3f4;color:#a34655;font-weight:850
+    }
+    .gemini-note-status{
+      min-height:20px;margin-top:8px;color:#62758f;font-size:11px;line-height:1.55
+    }
+    .gemini-note-status.ok{color:#237654}
+    .gemini-note-status.error{color:#ad4351}
+    .gemini-note-status.working{color:#8a661e}
+    .gemini-note-login-hint{
+      margin-top:8px;padding:9px 10px;border:1px solid #e8d5a8;border-radius:11px;
+      background:#fff8e5;color:#795b27;font-size:11px;line-height:1.6
+    }
+    @media(max-width:520px){
+      .gemini-note-actions,.gemini-note-footer{grid-template-columns:1fr}
+      .gemini-note-delete{width:100%}
+    }
+
   </style>
 </head>
 <body>
@@ -1052,7 +1112,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">iPhone＋iPad＋電腦 Firebase 跨裝置同步修正版</div>
+          <div class="brand-sub">iPhone＋iPad＋電腦 Firebase 同步＋無 API Gemini 筆記版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -1263,6 +1323,7 @@
         <div class="auth-notice">
           作答、略過與收藏會先保存在本機；有網路時自動同步至 Firestore。
           不同裝置登入同一帳號後，系統會依各題最後更新時間合併紀錄。
+          首次上傳大量舊紀錄可能需要1至3分鐘，請保持頁面開啟。
         </div>
         <div class="auth-sync-feedback" data-sync-state="idle">
           <div class="sync-status" data-sync-status>已登入，尚未開始同步。</div>
@@ -1383,7 +1444,7 @@ function buildAiQueryText(q){
     :"O 正確\nX 錯誤";
 
   return [
-    "請協助分析以下政府採購題目，並依現行法規說明正確答案、各選項理由及記憶重點：",
+    "請協助分析以下政府採購題目，並依現行法規說明正確答案、各選項理由及記憶重點。請用繁體中文，依「建議答案、核心理由、逐選項分析、法規重點、容易混淆處、記憶重點」分段回答，且不要使用表格：",
     "",
     `主題：${q.category}`,
     `題型：${labelType(q.type)}`,
@@ -1428,6 +1489,142 @@ async function openAiQuery(service){
     :"https://gemini.google.com/app";
 
   window.open(url,"_blank","noopener,noreferrer");
+}
+
+function setGeminiNoteStatus(message, kind = ""){
+  const status=document.getElementById("geminiNoteStatus");
+  if(!status)return;
+  status.textContent=message||"";
+  status.className=`gemini-note-status ${kind}`.trim()
+}
+
+async function loadGeminiNoteForQuestion(questionId){
+  const area=document.getElementById("geminiNoteText");
+  const loginHint=document.getElementById("geminiNoteLoginHint");
+  if(!area)return;
+
+  const signedIn=Boolean(window.firebaseQuizSync?.isSignedIn?.());
+  if(loginHint){
+    loginHint.textContent=signedIn
+      ?"已登入：儲存後會同步到其他裝置。"
+      :"目前是訪客模式：可先存於本機；登入後按「立即同步」即可合併到雲端。"
+  }
+
+  setGeminiNoteStatus("正在讀取已儲存的 AI 筆記…","working");
+
+  try{
+    const note=await window.firebaseQuizSync?.getGeminiNote?.(questionId);
+    area.value=note?.text||"";
+    setGeminiNoteStatus(
+      note?.text
+        ?"已載入這一題的 Gemini 個人筆記。"
+        :"這一題尚未儲存 Gemini 個人筆記。",
+      note?.text?"ok":""
+    )
+  }catch(error){
+    setGeminiNoteStatus(
+      `無法讀取筆記：${error?.message||"請稍後再試。"}`,
+      "error"
+    )
+  }
+}
+
+async function pasteGeminiNoteFromClipboard(){
+  const area=document.getElementById("geminiNoteText");
+  if(!area)return;
+
+  try{
+    if(!navigator.clipboard?.readText){
+      throw new Error("此瀏覽器不允許網站直接讀取剪貼簿")
+    }
+    const text=await navigator.clipboard.readText();
+    if(!text.trim())throw new Error("剪貼簿目前沒有文字內容");
+    area.value=text;
+    area.focus();
+    setGeminiNoteStatus(
+      "已從剪貼簿貼上。確認內容後請按「儲存我的 AI 筆記」。",
+      "ok"
+    )
+  }catch(error){
+    area.focus();
+    setGeminiNoteStatus(
+      "瀏覽器未允許自動讀取剪貼簿，請在下方欄位長按並選擇「貼上」。",
+      "error"
+    )
+  }
+}
+
+async function saveCurrentGeminiNote(){
+  const q=currentQuestion();
+  const area=document.getElementById("geminiNoteText");
+  const button=document.getElementById("saveGeminiNoteBtn");
+  if(!q||!area||!button)return;
+
+  const text=area.value.trim();
+  if(!text){
+    setGeminiNoteStatus("請先貼上 Gemini 分析內容。","error");
+    area.focus();
+    return
+  }
+
+  button.disabled=true;
+  button.textContent="儲存中…";
+  setGeminiNoteStatus("正在儲存 Gemini 個人筆記…","working");
+
+  try{
+    const result=await window.firebaseQuizSync?.saveGeminiNote?.(q.id,text);
+    const cloud=result?.location==="cloud";
+    setGeminiNoteStatus(
+      cloud
+        ?"已儲存並同步到 Firestore，可在其他裝置登入同一帳號查看。"
+        :"已儲存在目前裝置；登入後按「立即同步」即可上傳雲端。",
+      "ok"
+    );
+    toast(cloud?"AI 筆記已同步":"AI 筆記已儲存在本機")
+  }catch(error){
+    setGeminiNoteStatus(
+      `儲存失敗：${error?.message||"請稍後再試。"}`,
+      "error"
+    )
+  }finally{
+    button.disabled=false;
+    button.textContent="儲存我的 AI 筆記"
+  }
+}
+
+async function deleteCurrentGeminiNote(){
+  const q=currentQuestion();
+  const area=document.getElementById("geminiNoteText");
+  const button=document.getElementById("deleteGeminiNoteBtn");
+  if(!q||!area||!button)return;
+
+  if(!confirm("確定刪除這一題的 Gemini 個人筆記？此動作會同步到其他裝置。")){
+    return
+  }
+
+  button.disabled=true;
+  button.textContent="刪除中…";
+  setGeminiNoteStatus("正在刪除 Gemini 個人筆記…","working");
+
+  try{
+    const result=await window.firebaseQuizSync?.deleteGeminiNote?.(q.id);
+    area.value="";
+    setGeminiNoteStatus(
+      result?.location==="cloud"
+        ?"已刪除並同步到 Firestore。"
+        :"已在目前裝置標記刪除；登入後同步即可更新雲端。",
+      "ok"
+    );
+    toast("AI 筆記已刪除")
+  }catch(error){
+    setGeminiNoteStatus(
+      `刪除失敗：${error?.message||"請稍後再試。"}`,
+      "error"
+    )
+  }finally{
+    button.disabled=false;
+    button.textContent="刪除筆記"
+  }
 }
 
 function correctLabel(q,key){
@@ -1701,24 +1898,42 @@ function submitAnswer(){
       <div class="analysis-wrap">
         <div class="analysis-heading">逐選項分析</div>
         <div class="analysis-list">${analysisHtml}</div>
-        <div class="ai-query-box">
-          <div class="ai-query-title">🤖 使用 AI 進一步查詢</div>
-          <div class="ai-query-note">
-            點選後會先複製目前題目與選項，再開啟查詢網站；進入後貼上即可詢問。
+        <div class="gemini-note-box">
+          <div class="gemini-note-title">✨ Gemini 個人 AI 筆記（免 API）</div>
+          <div class="gemini-note-steps">
+            ① 複製題目並開啟 Gemini　② 在 Gemini 送出查詢　
+            ③ 複製回答並貼回下方　④ 儲存後跨裝置查看。
           </div>
-          <div class="ai-query-actions">
-            <a class="ai-query-btn chatgpt" href="https://chatgpt.com/"
-               target="_blank" rel="noopener noreferrer"
-               onclick="event.preventDefault();openAiQuery('chatgpt')">
-              ChatGPT 查詢
-            </a>
-            <a class="ai-query-btn gemini" href="https://gemini.google.com/app"
-               target="_blank" rel="noopener noreferrer"
-               onclick="event.preventDefault();openAiQuery('gemini')">
-              Gemini 查詢
-            </a>
+          <div class="gemini-note-actions">
+            <button class="gemini-note-btn open" type="button"
+                    onclick="openAiQuery('gemini')">
+              1. 複製題目並開啟 Gemini
+            </button>
+            <button class="gemini-note-btn paste" type="button"
+                    onclick="pasteGeminiNoteFromClipboard()">
+              2. 從剪貼簿貼上回答
+            </button>
           </div>
           <div class="ai-copy-status" id="aiCopyStatus"></div>
+          <textarea
+            class="gemini-note-textarea"
+            id="geminiNoteText"
+            maxlength="100000"
+            placeholder="請將 Gemini 的分析結果貼在這裡。你可以修改、補充或整理內容後再儲存。"
+          ></textarea>
+          <div class="gemini-note-footer">
+            <button class="gemini-note-save" id="saveGeminiNoteBtn"
+                    type="button" onclick="saveCurrentGeminiNote()">
+              儲存我的 AI 筆記
+            </button>
+            <button class="gemini-note-delete" id="deleteGeminiNoteBtn"
+                    type="button" onclick="deleteCurrentGeminiNote()">
+              刪除筆記
+            </button>
+          </div>
+          <div class="gemini-note-login-hint" id="geminiNoteLoginHint"></div>
+          <div class="gemini-note-status" id="geminiNoteStatus"
+               aria-live="polite"></div>
         </div>
         <div class="summary-card">
           <div class="summary-title">本題總結</div>
@@ -1729,6 +1944,7 @@ function submitAnswer(){
         </div>
       </div>
     </section>`;
+  loadGeminiNoteForQuestion(q.id);
   $("submitBtn").classList.add("hidden");
   $("skipBtn").classList.add("hidden");
   $("nextBtn").classList.remove("hidden");
