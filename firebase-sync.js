@@ -215,7 +215,22 @@ async function commitOperations(operations, progressLabel = "正在同步") {
 
     chunk.forEach((operation) => {
       if (operation.type === "set") {
-        batch.set(operation.ref, operation.data, { merge: true });
+        let data=operation.data;
+
+        if(
+          operation.ref?.path?.includes("/optionAnalysisEdits/") &&
+          data &&
+          typeof data==="object"
+        ){
+          const id=operation.ref.path.split("/").pop()||"";
+          const safe=safeOptionAnalysisFirestoreData(data,id);
+          data={
+            ...safe,
+            ...(data.updatedAt?{updatedAt:data.updatedAt}:{})
+          };
+        }
+
+        batch.set(operation.ref, data, { merge: true });
       } else {
         batch.delete(operation.ref);
       }
@@ -352,7 +367,36 @@ async function loadAndMergeSession(user) {
 }
 
 function readLocalOptionAnalysisEdits(){
-  try{const raw=localStorage.getItem(OPTION_ANALYSIS_EDIT_STORAGE_KEY);const parsed=raw?JSON.parse(raw):{};return parsed&&typeof parsed==="object"?parsed:{}}catch(e){console.warn(e);return{}}
+  try{
+    const raw=localStorage.getItem(OPTION_ANALYSIS_EDIT_STORAGE_KEY);
+    const parsed=raw?JSON.parse(raw):{};
+    if(!parsed||typeof parsed!=="object")return{};
+
+    const cleaned={};
+    let changed=false;
+
+    Object.entries(parsed).forEach(([questionId,record])=>{
+      const normalized=normalizeOptionAnalysisRecord(record,questionId);
+      cleaned[String(questionId)]=normalized;
+
+      const before=JSON.stringify(record||{});
+      const after=JSON.stringify(normalized);
+      if(before!==after)changed=true;
+    });
+
+    if(changed){
+      localStorage.setItem(
+        OPTION_ANALYSIS_EDIT_STORAGE_KEY,
+        JSON.stringify(cleaned)
+      );
+      console.info("已自動遷移舊版逐項分析欄位名稱。");
+    }
+
+    return cleaned;
+  }catch(e){
+    console.warn(e);
+    return{};
+  }
 }
 function writeLocalOptionAnalysisEdits(v){localStorage.setItem(OPTION_ANALYSIS_EDIT_STORAGE_KEY,JSON.stringify(v&&typeof v==="object"?v:{}))}
 function normalizeOptionAnalysisItem(v){v=v&&typeof v==="object"?v:{};return{text:String(v.text||""),deleted:Boolean(v.deleted),createdAtMs:Number(v.createdAtMs||v.updatedAtMs||0),updatedAtMs:Number(v.updatedAtMs||0)}}
@@ -388,24 +432,114 @@ function normalizeOptionAnalysisRecord(v,id=""){
   }
 }
 function mergeOptionAnalysisRecords(a,b,id){a=normalizeOptionAnalysisRecord(a,id);b=normalizeOptionAnalysisRecord(b,id);const items={};new Set([...Object.keys(a.items),...Object.keys(b.items)]).forEach(k=>{const x=a.items[k],y=b.items[k];items[k]=x&&y?(x.updatedAtMs>=y.updatedAtMs?x:y):(x||y)});return{questionId:String(id),items,updatedAtMs:Math.max(Number(a.updatedAtMs||0),Number(b.updatedAtMs||0),...Object.values(items).map(x=>Number(x.updatedAtMs||0)))}}
+function safeOptionAnalysisFirestoreData(record,id=""){
+  const normalized=normalizeOptionAnalysisRecord(record,id);
+  const safeItems={};
+
+  Object.entries(normalized.items||{}).forEach(([rawKey,item])=>{
+    let key=String(rawKey);
+
+    if(key==="__summary__"){
+      key="summaryText";
+    }else if(/^__.*__$/.test(key)){
+      key=`custom_${key.replace(/^__+|__+$/g,"")||"field"}`;
+    }
+
+    // 最後一道保護，禁止任何雙底線保留欄位進入 Firestore。
+    if(/^__.*__$/.test(key)){
+      key=`custom_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    }
+
+    safeItems[key]=normalizeOptionAnalysisItem(item);
+  });
+
+  return{
+    questionId:String(normalized.questionId||id),
+    items:safeItems,
+    updatedAtMs:Number(normalized.updatedAtMs||0)
+  };
+}
+
 async function syncOptionAnalysisEdits(user){
-  if(!user||!db)return;const local=readLocalOptionAnalysisEdits();const snap=await getDocs(collection(db,"users",user.uid,"optionAnalysisEdits"));const remote={};snap.forEach(s=>remote[s.id]=normalizeOptionAnalysisRecord(s.data(),s.id));const mergedAll={},ops=[];new Set([...Object.keys(local),...Object.keys(remote)]).forEach(id=>{const merged=mergeOptionAnalysisRecords(local[id],remote[id],id);mergedAll[id]=merged;const r=remote[id]?normalizeOptionAnalysisRecord(remote[id],id):null;if(!r||!sameValue(merged,r))ops.push({type:"set",ref:doc(db,"users",user.uid,"optionAnalysisEdits",id),data:{...merged,updatedAt:serverTimestamp()}})});writeLocalOptionAnalysisEdits(mergedAll);if(ops.length)await commitOperations(ops,"正在同步逐項分析修改")
+  if(!user||!db)return;
+
+  const local=readLocalOptionAnalysisEdits();
+  const snap=await getDocs(
+    collection(db,"users",user.uid,"optionAnalysisEdits")
+  );
+
+  const remote={};
+  snap.forEach(s=>{
+    remote[s.id]=normalizeOptionAnalysisRecord(s.data(),s.id)
+  });
+
+  const mergedAll={};
+  const ops=[];
+
+  new Set([...Object.keys(local),...Object.keys(remote)]).forEach(id=>{
+    const merged=mergeOptionAnalysisRecords(local[id],remote[id],id);
+    const safeMerged=safeOptionAnalysisFirestoreData(merged,id);
+    mergedAll[id]=safeMerged;
+
+    const r=remote[id]
+      ?safeOptionAnalysisFirestoreData(remote[id],id)
+      :null;
+
+    if(!r||!sameValue(safeMerged,r)){
+      ops.push({
+        type:"set",
+        ref:doc(db,"users",user.uid,"optionAnalysisEdits",id),
+        data:{
+          ...safeMerged,
+          updatedAt:serverTimestamp()
+        }
+      })
+    }
+  });
+
+  // 先把清洗後資料回寫本機，從根源移除舊 __summary__。
+  writeLocalOptionAnalysisEdits(mergedAll);
+
+  if(ops.length){
+    await commitOperations(ops,"正在同步逐項分析修改")
+  }
 }
 async function getOptionAnalysisEdits(questionId){
-  const id=String(questionId||"").trim();if(!id)return{};const all=readLocalOptionAnalysisEdits();const local=all[id]?normalizeOptionAnalysisRecord(all[id],id):null;const user=currentUser||auth?.currentUser||null;if(!user||!db||!navigator.onLine)return clone(local?.items||{});try{const ref=doc(db,"users",user.uid,"optionAnalysisEdits",id);const s=await getDoc(ref);const remote=s.exists()?normalizeOptionAnalysisRecord(s.data(),id):null;const merged=mergeOptionAnalysisRecords(local,remote,id);all[id]=merged;writeLocalOptionAnalysisEdits(all);if(!remote||!sameValue(merged,remote))await setDoc(ref,{...merged,updatedAt:serverTimestamp()},{merge:true});return clone(merged.items||{})}catch(e){console.warn(e);return clone(local?.items||{})}
+  const id=String(questionId||"").trim();if(!id)return{};const all=readLocalOptionAnalysisEdits();const local=all[id]?normalizeOptionAnalysisRecord(all[id],id):null;const user=currentUser||auth?.currentUser||null;if(!user||!db||!navigator.onLine)return clone(local?.items||{});try{const ref=doc(db,"users",user.uid,"optionAnalysisEdits",id);const s=await getDoc(ref);const remote=s.exists()?normalizeOptionAnalysisRecord(s.data(),id):null;const merged=mergeOptionAnalysisRecords(local,remote,id);all[id]=merged;writeLocalOptionAnalysisEdits(all);if(!remote||!sameValue(merged,remote))await setDoc(
+      ref,
+      {
+        ...safeOptionAnalysisFirestoreData(merged,id),
+        updatedAt:serverTimestamp()
+      },
+      {merge:true}
+    );return clone(merged.items||{})}catch(e){console.warn(e);return clone(local?.items||{})}
 }
 async function saveOptionAnalysisEdit(questionId,optionKey,text){
   const id=String(questionId||"").trim();
   let key=String(optionKey||"").trim();
   if(key==="__summary__")key="summaryText";
   if(/^__.*__$/.test(key))key=`custom_${key.replace(/^__|__$/g,"")||"field"}`;
-  const content=String(text||"").trim();if(!id||!key)throw new Error("找不到目前題目或選項。");if(!content)throw new Error("逐項分析內容不可空白。");if(content.length>30000)throw new Error("單一選項分析內容過長。");const all=readLocalOptionAnalysisEdits(),rec=normalizeOptionAnalysisRecord(all[id],id),old=rec.items[key]?normalizeOptionAnalysisItem(rec.items[key]):null,now=Date.now();rec.items[key]={text:content,deleted:false,createdAtMs:old&&!old.deleted?Number(old.createdAtMs||old.updatedAtMs||now):now,updatedAtMs:now};rec.updatedAtMs=now;all[id]=rec;writeLocalOptionAnalysisEdits(all);const user=currentUser||auth?.currentUser||null;if(user&&db&&navigator.onLine){await setDoc(doc(db,"users",user.uid,"optionAnalysisEdits",id),{...rec,updatedAt:serverTimestamp()},{merge:true});return{item:clone(rec.items[key]),location:"cloud"}}return{item:clone(rec.items[key]),location:"local"}
+  const content=String(text||"").trim();if(!id||!key)throw new Error("找不到目前題目或選項。");if(!content)throw new Error("逐項分析內容不可空白。");if(content.length>30000)throw new Error("單一選項分析內容過長。");const all=readLocalOptionAnalysisEdits(),rec=normalizeOptionAnalysisRecord(all[id],id),old=rec.items[key]?normalizeOptionAnalysisItem(rec.items[key]):null,now=Date.now();rec.items[key]={text:content,deleted:false,createdAtMs:old&&!old.deleted?Number(old.createdAtMs||old.updatedAtMs||now):now,updatedAtMs:now};rec.updatedAtMs=now;all[id]=rec;writeLocalOptionAnalysisEdits(all);const user=currentUser||auth?.currentUser||null;if(user&&db&&navigator.onLine){await setDoc(
+      doc(db,"users",user.uid,"optionAnalysisEdits",id),
+      {
+        ...safeOptionAnalysisFirestoreData(rec,id),
+        updatedAt:serverTimestamp()
+      },
+      {merge:true}
+    );return{item:clone(rec.items[key]),location:"cloud"}}return{item:clone(rec.items[key]),location:"local"}
 }
 async function resetOptionAnalysisEdit(questionId,optionKey){
   const id=String(questionId||"").trim();
   let key=String(optionKey||"").trim();
   if(key==="__summary__")key="summaryText";
-  if(/^__.*__$/.test(key))key=`custom_${key.replace(/^__|__$/g,"")||"field"}`;if(!id||!key)throw new Error("找不到目前題目或選項。");const all=readLocalOptionAnalysisEdits(),rec=normalizeOptionAnalysisRecord(all[id],id),old=rec.items[key]?normalizeOptionAnalysisItem(rec.items[key]):null,now=Date.now();rec.items[key]={text:"",deleted:true,createdAtMs:Number(old?.createdAtMs||old?.updatedAtMs||now),updatedAtMs:now};rec.updatedAtMs=now;all[id]=rec;writeLocalOptionAnalysisEdits(all);const user=currentUser||auth?.currentUser||null;if(user&&db&&navigator.onLine){await setDoc(doc(db,"users",user.uid,"optionAnalysisEdits",id),{...rec,updatedAt:serverTimestamp()},{merge:true});return{location:"cloud"}}return{location:"local"}
+  if(/^__.*__$/.test(key))key=`custom_${key.replace(/^__|__$/g,"")||"field"}`;if(!id||!key)throw new Error("找不到目前題目或選項。");const all=readLocalOptionAnalysisEdits(),rec=normalizeOptionAnalysisRecord(all[id],id),old=rec.items[key]?normalizeOptionAnalysisItem(rec.items[key]):null,now=Date.now();rec.items[key]={text:"",deleted:true,createdAtMs:Number(old?.createdAtMs||old?.updatedAtMs||now),updatedAtMs:now};rec.updatedAtMs=now;all[id]=rec;writeLocalOptionAnalysisEdits(all);const user=currentUser||auth?.currentUser||null;if(user&&db&&navigator.onLine){await setDoc(
+      doc(db,"users",user.uid,"optionAnalysisEdits",id),
+      {
+        ...safeOptionAnalysisFirestoreData(rec,id),
+        updatedAt:serverTimestamp()
+      },
+      {merge:true}
+    );return{location:"cloud"}}return{location:"local"}
 }
 
 function readLocalGeminiNotes() {
@@ -704,7 +838,7 @@ async function writeProfile(user) {
       displayName: user.displayName || "",
       email: user.email || "",
       lastLoginAt: serverTimestamp(),
-      appVersion: "firebase-unified-analysis-editor-v18"
+      appVersion: "firebase-unified-analysis-editor-v19"
     },
     { merge: true }
   );
