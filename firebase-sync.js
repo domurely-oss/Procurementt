@@ -370,11 +370,13 @@ function writeLocalGeminiNotes(notes) {
 
 function normalizeGeminiNote(note, questionId = "") {
   const item = note && typeof note === "object" ? note : {};
+  const updatedAtMs = Number(item.updatedAtMs || 0);
   return {
     questionId: String(item.questionId || questionId),
     text: String(item.text || ""),
     deleted: Boolean(item.deleted),
-    updatedAtMs: Number(item.updatedAtMs || 0)
+    createdAtMs: Number(item.createdAtMs || updatedAtMs || 0),
+    updatedAtMs
   };
 }
 
@@ -548,14 +550,23 @@ async function saveGeminiNote(questionId, text) {
     throw new Error("筆記內容過長，請縮短至 100,000 字以內。");
   }
 
+  const localNotes = readLocalGeminiNotes();
+  const existing = Object.prototype.hasOwnProperty.call(localNotes, id)
+    ? normalizeGeminiNote(localNotes[id], id)
+    : null;
+  const now = Date.now();
+
   const note = {
     questionId: id,
     text: content,
     deleted: false,
-    updatedAtMs: Date.now()
+    createdAtMs:
+      existing && !existing.deleted
+        ? Number(existing.createdAtMs || existing.updatedAtMs || now)
+        : now,
+    updatedAtMs: now
   };
 
-  const localNotes = readLocalGeminiNotes();
   localNotes[id] = note;
   writeLocalGeminiNotes(localNotes);
 
@@ -594,14 +605,19 @@ async function deleteGeminiNote(questionId) {
     使用刪除標記而非直接移除文件，避免不同裝置離線時，
     舊筆記在下次同步時又被還原。
   */
+  const localNotes = readLocalGeminiNotes();
+  const existing = Object.prototype.hasOwnProperty.call(localNotes, id)
+    ? normalizeGeminiNote(localNotes[id], id)
+    : null;
+  const now = Date.now();
+
   const tombstone = {
     questionId: id,
     text: "",
     deleted: true,
-    updatedAtMs: Date.now()
+    createdAtMs: Number(existing?.createdAtMs || existing?.updatedAtMs || now),
+    updatedAtMs: now
   };
-
-  const localNotes = readLocalGeminiNotes();
   localNotes[id] = tombstone;
   writeLocalGeminiNotes(localNotes);
 
@@ -630,7 +646,7 @@ async function writeProfile(user) {
       displayName: user.displayName || "",
       email: user.email || "",
       lastLoginAt: serverTimestamp(),
-      appVersion: "firebase-no-api-gemini-notes-v13"
+      appVersion: "firebase-no-api-gemini-notes-lock-v15"
     },
     { merge: true }
   );

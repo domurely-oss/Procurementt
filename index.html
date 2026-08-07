@@ -1039,64 +1039,251 @@
       }
     }
 
+
     .gemini-note-box{
-      margin-top:13px;padding:15px;border:1px solid #c9d8ec;border-radius:18px;
-      background:linear-gradient(145deg,#f9fbff,#eef4ff)
+      --note-blue:#496eae;
+      --note-green:#2f8069;
+      margin-top:15px;
+      overflow:hidden;
+      border:1px solid #d5dbe7;
+      border-radius:22px;
+      background:#fff;
+      box-shadow:0 12px 28px rgba(61,69,91,.08)
+    }
+    .gemini-note-head{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:15px 16px;
+      border-bottom:1px solid #e8e8eb;
+      background:linear-gradient(135deg,#f7f2ff,#edf7ff)
+    }
+    .gemini-note-title-wrap{display:flex;align-items:center;gap:10px;min-width:0}
+    .gemini-note-logo{
+      display:grid;place-items:center;flex:0 0 auto;
+      width:38px;height:38px;border-radius:13px;
+      background:linear-gradient(135deg,#5a75bd,#765aae);
+      color:#fff;font-size:19px;box-shadow:0 7px 14px rgba(91,86,160,.19)
     }
     .gemini-note-title{
-      display:flex;align-items:center;gap:8px;
-      color:#315889;font-size:16px;font-weight:950
+      color:#334a72;font-size:16px;font-weight:950;line-height:1.35
     }
-    .gemini-note-steps{
-      margin:7px 0 12px;color:#64758c;font-size:12px;line-height:1.72
+    .gemini-note-subtitle{
+      margin-top:2px;color:#7c8799;font-size:11px;line-height:1.45
     }
-    .gemini-note-actions{
-      display:grid;grid-template-columns:1fr 1fr;gap:9px
+    .gemini-note-badge{
+      flex:0 0 auto;padding:6px 9px;border:1px solid #d4dbe8;border-radius:999px;
+      background:#fff;color:#748096;font-size:10px;font-weight:900
     }
-    .gemini-note-btn{
-      min-height:46px;padding:9px 11px;border-radius:14px;
-      font-size:13px;font-weight:900
+    .gemini-note-badge.saved{
+      border-color:#a8d6c7;background:#eaf8f3;color:#27735e
     }
-    .gemini-note-btn.open{
-      color:#fff;border:1px solid #5c70b1;
-      background:linear-gradient(135deg,#4c75bd,#725cae)
+    .gemini-note-badge.editing{
+      border-color:#e5c98c;background:#fff7df;color:#80601f
     }
-    .gemini-note-btn.paste{
-      color:#345b91;border:1px solid #b9cbe5;background:#fff
+    .gemini-note-body{padding:15px}
+    .gemini-note-state.hidden{display:none!important}
+
+    /* 尚未建立筆記 */
+    .gemini-note-empty{
+      padding:20px 15px;
+      border:1.5px dashed #cdd6e5;border-radius:18px;
+      background:
+        radial-gradient(circle at 18px 18px,rgba(112,132,173,.08) 2px,transparent 2.5px) 0 0/28px 28px,
+        linear-gradient(145deg,#fbfcff,#f4f7fb);
+      text-align:center
+    }
+    .gemini-note-empty-icon{
+      display:grid;place-items:center;width:62px;height:62px;margin:0 auto 11px;
+      border-radius:20px;background:#fff;color:#607cb5;font-size:29px;
+      box-shadow:0 9px 22px rgba(76,101,148,.13)
+    }
+    .gemini-note-empty-title{
+      color:#425571;font-size:16px;font-weight:950
+    }
+    .gemini-note-empty-text{
+      max-width:520px;margin:7px auto 14px;color:#7a8798;font-size:12px;line-height:1.75
+    }
+    .gemini-note-empty-actions{
+      display:grid;grid-template-columns:1fr 1fr;gap:9px;max-width:560px;margin:auto
+    }
+
+    /* 已儲存筆記 */
+    .gemini-note-saved{
+      border:1px solid #cbe1da;border-radius:18px;
+      background:linear-gradient(145deg,#fbfffd,#f0faf6)
+    }
+    .gemini-note-saved-top{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
+      padding:13px 14px;border-bottom:1px solid #dcece6
+    }
+    .gemini-note-saved-label{
+      display:flex;align-items:center;gap:7px;color:#286d5a;
+      font-size:13px;font-weight:950
+    }
+    .gemini-note-saved-label:before{
+      content:"✓";display:grid;place-items:center;width:22px;height:22px;
+      border-radius:50%;background:#d9f2e8;color:#237159;font-size:12px
+    }
+    .gemini-note-time{
+      color:#778982;font-size:10px;line-height:1.55;text-align:right
+    }
+    .gemini-note-display{
+      max-height:480px;overflow:auto;padding:16px;
+      background:#fff;color:#34465b;font-size:14px;line-height:1.9;
+      white-space:pre-wrap;word-break:break-word
+    }
+    .gemini-note-display.is-collapsed{max-height:260px}
+    .gemini-note-saved-actions{
+      display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;
+      padding:12px 13px;border-top:1px solid #dcece6
+    }
+
+    /* 新增或修改筆記 */
+    .gemini-note-editor{
+      padding:14px;border:1px solid #e5d6ad;border-radius:18px;
+      background:linear-gradient(145deg,#fffdf7,#fff8e8)
+    }
+    .gemini-note-editor-head{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
+      margin-bottom:10px
+    }
+    .gemini-note-editor-title{
+      color:#77581f;font-size:14px;font-weight:950
+    }
+    .gemini-note-editor-help{
+      margin-top:3px;color:#8b7b5b;font-size:11px;line-height:1.55
+    }
+    .gemini-note-editor-tools{
+      display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px
     }
     .gemini-note-textarea{
-      width:100%;min-height:190px;margin-top:11px;padding:13px;
-      resize:vertical;border:1px solid #c9d6e8;border-radius:14px;
-      background:#fff;color:#33445d;font:inherit;font-size:14px;line-height:1.8;
-      outline:none
+      width:100%;min-height:220px;padding:14px;resize:vertical;
+      border:1px solid #dacaa8;border-radius:14px;background:#fff;color:#33445d;
+      font:inherit;font-size:14px;line-height:1.85;outline:none
     }
     .gemini-note-textarea:focus{
-      border-color:#7189bd;box-shadow:0 0 0 3px rgba(91,117,175,.12)
+      border-color:#b99955;box-shadow:0 0 0 3px rgba(185,153,85,.13)
     }
-    .gemini-note-footer{
-      display:grid;grid-template-columns:1fr auto;gap:9px;margin-top:9px
+    .gemini-note-editor-footer{
+      display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:9px
     }
-    .gemini-note-save{
-      min-height:45px;border:1px solid #8fc7b3;border-radius:13px;
-      background:#eaf8f3;color:#246f5b;font-weight:900
+
+    .gemini-note-btn{
+      min-height:44px;padding:8px 11px;border-radius:13px;
+      font-size:12px;font-weight:900
     }
-    .gemini-note-delete{
-      min-height:45px;padding:0 14px;border:1px solid #e2bdc3;border-radius:13px;
-      background:#fff3f4;color:#a34655;font-weight:850
+    .gemini-note-btn.primary{
+      border:1px solid #5872ae;background:linear-gradient(135deg,#4f77b9,#6d5baa);
+      color:#fff
     }
+    .gemini-note-btn.secondary{
+      border:1px solid #b9c8df;background:#fff;color:#405f92
+    }
+    .gemini-note-btn.success{
+      border:1px solid #8dc7b3;background:#eaf8f3;color:#286f5d
+    }
+    .gemini-note-btn.warning{
+      border:1px solid #ddc27f;background:#fff8e5;color:#806022
+    }
+    .gemini-note-btn.danger{
+      border:1px solid #dfbbc2;background:#fff2f4;color:#a23f50
+    }
+    .gemini-note-btn:disabled{cursor:wait;opacity:.62}
     .gemini-note-status{
-      min-height:20px;margin-top:8px;color:#62758f;font-size:11px;line-height:1.55
+      min-height:20px;margin-top:9px;color:#6f7c91;font-size:11px;line-height:1.55
     }
     .gemini-note-status.ok{color:#237654}
     .gemini-note-status.error{color:#ad4351}
     .gemini-note-status.working{color:#8a661e}
     .gemini-note-login-hint{
-      margin-top:8px;padding:9px 10px;border:1px solid #e8d5a8;border-radius:11px;
-      background:#fff8e5;color:#795b27;font-size:11px;line-height:1.6
+      margin-top:9px;padding:9px 10px;border:1px solid #e7d7ae;border-radius:11px;
+      background:#fff9e9;color:#795c2b;font-size:11px;line-height:1.6
     }
-    @media(max-width:520px){
-      .gemini-note-actions,.gemini-note-footer{grid-template-columns:1fr}
-      .gemini-note-delete{width:100%}
+    .gemini-note-copy-status{
+      min-height:18px;margin-top:7px;color:#60738f;font-size:10px;line-height:1.5
+    }
+
+    @media(max-width:620px){
+      .gemini-note-head{align-items:flex-start}
+      .gemini-note-empty-actions,
+      .gemini-note-editor-tools,
+      .gemini-note-editor-footer{grid-template-columns:1fr}
+      .gemini-note-saved-actions{grid-template-columns:1fr 1fr}
+      .gemini-note-saved-actions .gemini-note-btn.danger{grid-column:1/-1}
+    }
+
+
+    .gemini-note-lock-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 13px;
+      border-bottom:1px solid #dcece6;
+      background:#f5fbf8;
+    }
+    .gemini-note-lock-state{
+      display:flex;
+      align-items:center;
+      gap:7px;
+      color:#356d5e;
+      font-size:11px;
+      font-weight:900;
+    }
+    .gemini-note-lock-icon{
+      display:grid;
+      place-items:center;
+      width:25px;
+      height:25px;
+      border:1px solid #add3c5;
+      border-radius:9px;
+      background:#e6f6f0;
+      font-size:13px;
+    }
+    .gemini-note-readonly{
+      width:100%;
+      min-height:220px;
+      max-height:480px;
+      padding:16px;
+      resize:vertical;
+      border:0;
+      border-radius:0;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          #fbfdfc 0,
+          #fbfdfc 31px,
+          #eef5f2 32px
+        );
+      color:#34465b;
+      font:inherit;
+      font-size:14px;
+      line-height:1.9;
+      outline:none;
+      white-space:pre-wrap;
+      word-break:break-word;
+      cursor:default;
+    }
+    .gemini-note-readonly:focus{
+      box-shadow:inset 0 0 0 2px rgba(68,116,98,.12);
+    }
+    .gemini-note-readonly.is-collapsed{
+      max-height:260px;
+    }
+    .gemini-note-readonly[readonly]{
+      caret-color:transparent;
+    }
+    .gemini-note-edit-unlocked{
+      display:flex;
+      align-items:center;
+      gap:7px;
+      margin-bottom:9px;
+      padding:9px 11px;
+      border:1px solid #e5c98c;
+      border-radius:11px;
+      background:#fff7df;
+      color:#80601f;
+      font-size:11px;
+      font-weight:900;
     }
 
   </style>
@@ -1112,7 +1299,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">iPhone＋iPad＋電腦 Firebase 同步＋無 API Gemini 筆記版</div>
+          <div class="brand-sub">iPhone＋iPad＋電腦 Firebase 同步＋Gemini 筆記鎖定版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -1491,37 +1678,117 @@ async function openAiQuery(service){
   window.open(url,"_blank","noopener,noreferrer");
 }
 
-function setGeminiNoteStatus(message, kind = ""){
+let geminiNoteUiState={
+  questionId:null,
+  note:null,
+  mode:"loading"
+};
+
+function setGeminiNoteStatus(message,kind=""){
   const status=document.getElementById("geminiNoteStatus");
   if(!status)return;
   status.textContent=message||"";
   status.className=`gemini-note-status ${kind}`.trim()
 }
 
-async function loadGeminiNoteForQuestion(questionId){
+function formatGeminiNoteTime(value){
+  const ms=Number(value||0);
+  if(!ms)return "時間未記錄";
+  try{
+    return new Date(ms).toLocaleString("zh-TW",{
+      year:"numeric",month:"2-digit",day:"2-digit",
+      hour:"2-digit",minute:"2-digit"
+    })
+  }catch{
+    return "時間未記錄"
+  }
+}
+
+function setGeminiNoteBadge(text,kind=""){
+  const badge=document.getElementById("geminiNoteBadge");
+  if(!badge)return;
+  badge.textContent=text;
+  badge.className=`gemini-note-badge ${kind}`.trim()
+}
+
+function renderGeminiNotePanel(mode,note=null){
+  const empty=document.getElementById("geminiNoteEmptyState");
+  const saved=document.getElementById("geminiNoteSavedState");
+  const editor=document.getElementById("geminiNoteEditState");
+  const display=document.getElementById("geminiNoteDisplay");
   const area=document.getElementById("geminiNoteText");
+  const time=document.getElementById("geminiNoteTime");
+  const editorTitle=document.getElementById("geminiNoteEditorTitle");
+  const saveButton=document.getElementById("saveGeminiNoteBtn");
+
+  if(!empty||!saved||!editor)return;
+
+  geminiNoteUiState.mode=mode;
+  geminiNoteUiState.note=note||null;
+
+  empty.classList.toggle("hidden",mode!=="empty");
+  saved.classList.toggle("hidden",mode!=="saved");
+  editor.classList.toggle("hidden",mode!=="edit");
+
+  if(mode==="empty"){
+    setGeminiNoteBadge("尚未建立");
+    setGeminiNoteStatus("這一題尚未建立 Gemini 個人筆記。");
+  }
+
+  if(mode==="saved"&&note){
+    setGeminiNoteBadge("已儲存","saved");
+    if(display){
+      display.value=note.text||"";
+      display.readOnly=true;
+      display.setAttribute("aria-readonly","true");
+    }
+    if(time){
+      const created=formatGeminiNoteTime(note.createdAtMs);
+      const updated=formatGeminiNoteTime(note.updatedAtMs);
+      time.innerHTML=`建立：${esc(created)}<br>最後修改：${esc(updated)}`
+    }
+    setGeminiNoteStatus("筆記已載入，可直接查看、修改或刪除。","ok")
+  }
+
+  if(mode==="edit"){
+    const hasNote=Boolean(note?.text);
+    setGeminiNoteBadge(hasNote?"修改中":"新增中","editing");
+    if(area)area.value=note?.text||"";
+    if(editorTitle)editorTitle.textContent=hasNote?"修改 Gemini 個人筆記":"新增 Gemini 個人筆記";
+    if(saveButton)saveButton.textContent=hasNote?"儲存修改":"建立並儲存筆記";
+    setGeminiNoteStatus(
+      hasNote
+        ?"正在修改筆記；完成後請按「儲存修改」。"
+        :"請貼上 Gemini 回答，或直接輸入自己的補充內容。",
+      "working"
+    );
+    setTimeout(()=>area?.focus(),60)
+  }
+}
+
+async function loadGeminiNoteForQuestion(questionId){
   const loginHint=document.getElementById("geminiNoteLoginHint");
-  if(!area)return;
+  geminiNoteUiState={questionId,note:null,mode:"loading"};
 
   const signedIn=Boolean(window.firebaseQuizSync?.isSignedIn?.());
   if(loginHint){
     loginHint.textContent=signedIn
-      ?"已登入：儲存後會同步到其他裝置。"
-      :"目前是訪客模式：可先存於本機；登入後按「立即同步」即可合併到雲端。"
+      ?"已登入：新增、修改與刪除都會同步到其他裝置。"
+      :"訪客模式：內容先保存在目前裝置；登入後按「立即同步」即可上傳。"
   }
 
-  setGeminiNoteStatus("正在讀取已儲存的 AI 筆記…","working");
+  setGeminiNoteBadge("讀取中");
+  setGeminiNoteStatus("正在讀取這一題的個人筆記…","working");
 
   try{
     const note=await window.firebaseQuizSync?.getGeminiNote?.(questionId);
-    area.value=note?.text||"";
-    setGeminiNoteStatus(
-      note?.text
-        ?"已載入這一題的 Gemini 個人筆記。"
-        :"這一題尚未儲存 Gemini 個人筆記。",
-      note?.text?"ok":""
-    )
+    if(note?.text){
+      renderGeminiNotePanel("saved",note)
+    }else{
+      renderGeminiNotePanel("empty",null)
+    }
   }catch(error){
+    renderGeminiNotePanel("empty",null);
     setGeminiNoteStatus(
       `無法讀取筆記：${error?.message||"請稍後再試。"}`,
       "error"
@@ -1529,7 +1796,45 @@ async function loadGeminiNoteForQuestion(questionId){
   }
 }
 
+function startNewGeminiNote(){
+  renderGeminiNotePanel("edit",null)
+}
+
+function editCurrentGeminiNote(){
+  if(!geminiNoteUiState.note?.text){
+    startNewGeminiNote();
+    return
+  }
+
+  const confirmed=confirm(
+    "要解除鎖定並修改這一題的筆記嗎？\n修改完成後請按「儲存修改」。"
+  );
+  if(!confirmed)return;
+
+  renderGeminiNotePanel("edit",geminiNoteUiState.note)
+}
+
+function cancelGeminiNoteEdit(){
+  if(geminiNoteUiState.note?.text){
+    renderGeminiNotePanel("saved",geminiNoteUiState.note)
+  }else{
+    renderGeminiNotePanel("empty",null)
+  }
+}
+
+function toggleGeminiNoteHeight(){
+  const display=document.getElementById("geminiNoteDisplay");
+  const button=document.getElementById("toggleGeminiNoteBtn");
+  if(!display||!button)return;
+  const collapsed=display.classList.toggle("is-collapsed");
+  button.textContent=collapsed?"展開全文":"收合內容"
+}
+
 async function pasteGeminiNoteFromClipboard(){
+  if(geminiNoteUiState.mode!=="edit"){
+    renderGeminiNotePanel("edit",geminiNoteUiState.note)
+  }
+
   const area=document.getElementById("geminiNoteText");
   if(!area)return;
 
@@ -1542,13 +1847,13 @@ async function pasteGeminiNoteFromClipboard(){
     area.value=text;
     area.focus();
     setGeminiNoteStatus(
-      "已從剪貼簿貼上。確認內容後請按「儲存我的 AI 筆記」。",
+      "已從剪貼簿貼上。確認內容後請按儲存。",
       "ok"
     )
   }catch(error){
     area.focus();
     setGeminiNoteStatus(
-      "瀏覽器未允許自動讀取剪貼簿，請在下方欄位長按並選擇「貼上」。",
+      "瀏覽器未允許自動讀取剪貼簿，請在編輯框長按並選擇「貼上」。",
       "error"
     )
   }
@@ -1562,25 +1867,47 @@ async function saveCurrentGeminiNote(){
 
   const text=area.value.trim();
   if(!text){
-    setGeminiNoteStatus("請先貼上 Gemini 分析內容。","error");
+    setGeminiNoteStatus("請先輸入或貼上筆記內容。","error");
     area.focus();
     return
   }
 
+  const wasEditing=Boolean(geminiNoteUiState.note?.text);
   button.disabled=true;
-  button.textContent="儲存中…";
-  setGeminiNoteStatus("正在儲存 Gemini 個人筆記…","working");
+  button.textContent=wasEditing?"修改儲存中…":"建立儲存中…";
+  setGeminiNoteStatus(
+    wasEditing?"正在儲存修改內容…":"正在建立個人筆記…",
+    "working"
+  );
 
   try{
     const result=await window.firebaseQuizSync?.saveGeminiNote?.(q.id,text);
+    const savedNote={
+      questionId:q.id,
+      text,
+      createdAtMs:Number(
+        result?.createdAtMs||
+        geminiNoteUiState.note?.createdAtMs||
+        Date.now()
+      ),
+      updatedAtMs:Number(result?.updatedAtMs||Date.now()),
+      deleted:false
+    };
+    geminiNoteUiState.note=savedNote;
+    renderGeminiNotePanel("saved",savedNote);
+
     const cloud=result?.location==="cloud";
     setGeminiNoteStatus(
       cloud
-        ?"已儲存並同步到 Firestore，可在其他裝置登入同一帳號查看。"
-        :"已儲存在目前裝置；登入後按「立即同步」即可上傳雲端。",
+        ?(wasEditing
+          ?"筆記修改完成，已同步到 Firestore。"
+          :"筆記建立完成，已同步到 Firestore。")
+        :(wasEditing
+          ?"筆記修改完成，已保存在目前裝置。"
+          :"筆記建立完成，已保存在目前裝置。"),
       "ok"
     );
-    toast(cloud?"AI 筆記已同步":"AI 筆記已儲存在本機")
+    toast(wasEditing?"AI 筆記已修改":"AI 筆記已建立")
   }catch(error){
     setGeminiNoteStatus(
       `儲存失敗：${error?.message||"請稍後再試。"}`,
@@ -1588,31 +1915,37 @@ async function saveCurrentGeminiNote(){
     )
   }finally{
     button.disabled=false;
-    button.textContent="儲存我的 AI 筆記"
+    button.textContent=wasEditing?"儲存修改":"建立並儲存筆記"
   }
 }
 
 async function deleteCurrentGeminiNote(){
   const q=currentQuestion();
-  const area=document.getElementById("geminiNoteText");
   const button=document.getElementById("deleteGeminiNoteBtn");
-  if(!q||!area||!button)return;
+  if(!q||!button)return;
 
-  if(!confirm("確定刪除這一題的 Gemini 個人筆記？此動作會同步到其他裝置。")){
+  if(!geminiNoteUiState.note?.text){
+    renderGeminiNotePanel("empty",null);
+    return
+  }
+
+  if(!confirm("確定刪除這一題的 Gemini 個人筆記？刪除狀態會同步到其他裝置。")){
     return
   }
 
   button.disabled=true;
+  const oldLabel=button.textContent;
   button.textContent="刪除中…";
   setGeminiNoteStatus("正在刪除 Gemini 個人筆記…","working");
 
   try{
     const result=await window.firebaseQuizSync?.deleteGeminiNote?.(q.id);
-    area.value="";
+    geminiNoteUiState.note=null;
+    renderGeminiNotePanel("empty",null);
     setGeminiNoteStatus(
       result?.location==="cloud"
-        ?"已刪除並同步到 Firestore。"
-        :"已在目前裝置標記刪除；登入後同步即可更新雲端。",
+        ?"筆記已刪除，並同步到 Firestore。"
+        :"筆記已從目前裝置刪除；登入後同步即可更新雲端。",
       "ok"
     );
     toast("AI 筆記已刪除")
@@ -1623,7 +1956,7 @@ async function deleteCurrentGeminiNote(){
     )
   }finally{
     button.disabled=false;
-    button.textContent="刪除筆記"
+    button.textContent=oldLabel
   }
 }
 
@@ -1898,42 +2231,120 @@ function submitAnswer(){
       <div class="analysis-wrap">
         <div class="analysis-heading">逐選項分析</div>
         <div class="analysis-list">${analysisHtml}</div>
-        <div class="gemini-note-box">
-          <div class="gemini-note-title">✨ Gemini 個人 AI 筆記（免 API）</div>
-          <div class="gemini-note-steps">
-            ① 複製題目並開啟 Gemini　② 在 Gemini 送出查詢　
-            ③ 複製回答並貼回下方　④ 儲存後跨裝置查看。
+        <div class="gemini-note-box" id="geminiNoteBox">
+          <div class="gemini-note-head">
+            <div class="gemini-note-title-wrap">
+              <div class="gemini-note-logo">✨</div>
+              <div>
+                <div class="gemini-note-title">Gemini 個人 AI 筆記</div>
+                <div class="gemini-note-subtitle">免 API・可自行修改・登入後跨裝置同步</div>
+              </div>
+            </div>
+            <span class="gemini-note-badge" id="geminiNoteBadge">讀取中</span>
           </div>
-          <div class="gemini-note-actions">
-            <button class="gemini-note-btn open" type="button"
-                    onclick="openAiQuery('gemini')">
-              1. 複製題目並開啟 Gemini
-            </button>
-            <button class="gemini-note-btn paste" type="button"
-                    onclick="pasteGeminiNoteFromClipboard()">
-              2. 從剪貼簿貼上回答
-            </button>
+
+          <div class="gemini-note-body">
+            <section class="gemini-note-state gemini-note-empty hidden"
+                     id="geminiNoteEmptyState">
+              <div class="gemini-note-empty-icon">📝</div>
+              <div class="gemini-note-empty-title">這一題還沒有個人筆記</div>
+              <div class="gemini-note-empty-text">
+                可先將題目複製到 Gemini 查詢，再把回答貼回來保存；
+                也可以直接建立自己的重點整理。
+              </div>
+              <div class="gemini-note-empty-actions">
+                <button class="gemini-note-btn primary" type="button"
+                        onclick="openAiQuery('gemini')">
+                  複製題目並開啟 Gemini
+                </button>
+                <button class="gemini-note-btn success" type="button"
+                        onclick="startNewGeminiNote()">
+                  ＋ 建立筆記
+                </button>
+              </div>
+            </section>
+
+            <section class="gemini-note-state gemini-note-saved hidden"
+                     id="geminiNoteSavedState">
+              <div class="gemini-note-saved-top">
+                <div class="gemini-note-saved-label">已儲存的個人筆記</div>
+                <div class="gemini-note-time" id="geminiNoteTime"></div>
+              </div>
+              <div class="gemini-note-lock-row">
+                <div class="gemini-note-lock-state">
+                  <span class="gemini-note-lock-icon">🔒</span>
+                  目前為鎖定檢視模式，無法直接修改內容
+                </div>
+              </div>
+              <textarea
+                class="gemini-note-readonly"
+                id="geminiNoteDisplay"
+                readonly
+                aria-readonly="true"
+                spellcheck="false"
+                tabindex="0"
+              ></textarea>
+              <div class="gemini-note-saved-actions">
+                <button class="gemini-note-btn secondary" id="toggleGeminiNoteBtn"
+                        type="button" onclick="toggleGeminiNoteHeight()">
+                  收合內容
+                </button>
+                <button class="gemini-note-btn warning" type="button"
+                        onclick="editCurrentGeminiNote()">
+                  🔓 解除鎖定並修改
+                </button>
+                <button class="gemini-note-btn danger" id="deleteGeminiNoteBtn"
+                        type="button" onclick="deleteCurrentGeminiNote()">
+                  刪除筆記
+                </button>
+              </div>
+            </section>
+
+            <section class="gemini-note-state gemini-note-editor hidden"
+                     id="geminiNoteEditState">
+              <div class="gemini-note-editor-head">
+                <div>
+                  <div class="gemini-note-editor-title" id="geminiNoteEditorTitle">
+                    新增 Gemini 個人筆記
+                  </div>
+                  <div class="gemini-note-editor-help">
+                    可貼上 Gemini 回答，再自行刪修、補充及整理重點。
+                  </div>
+                </div>
+              </div>
+              <div class="gemini-note-edit-unlocked">
+                🔓 已解除鎖定，目前可修改內容；尚未儲存前可按「取消」返回原筆記。
+              </div>
+              <div class="gemini-note-editor-tools">
+                <button class="gemini-note-btn primary" type="button"
+                        onclick="openAiQuery('gemini')">
+                  複製題目並開啟 Gemini
+                </button>
+                <button class="gemini-note-btn secondary" type="button"
+                        onclick="pasteGeminiNoteFromClipboard()">
+                  從剪貼簿貼上
+                </button>
+              </div>
+              <div class="gemini-note-copy-status" id="aiCopyStatus"></div>
+              <textarea class="gemini-note-textarea" id="geminiNoteText"
+                        maxlength="100000"
+                        placeholder="請在此貼上 Gemini 分析，或輸入自己的學習筆記。"></textarea>
+              <div class="gemini-note-editor-footer">
+                <button class="gemini-note-btn success" id="saveGeminiNoteBtn"
+                        type="button" onclick="saveCurrentGeminiNote()">
+                  建立並儲存筆記
+                </button>
+                <button class="gemini-note-btn secondary" type="button"
+                        onclick="cancelGeminiNoteEdit()">
+                  取消
+                </button>
+              </div>
+            </section>
+
+            <div class="gemini-note-login-hint" id="geminiNoteLoginHint"></div>
+            <div class="gemini-note-status" id="geminiNoteStatus"
+                 aria-live="polite"></div>
           </div>
-          <div class="ai-copy-status" id="aiCopyStatus"></div>
-          <textarea
-            class="gemini-note-textarea"
-            id="geminiNoteText"
-            maxlength="100000"
-            placeholder="請將 Gemini 的分析結果貼在這裡。你可以修改、補充或整理內容後再儲存。"
-          ></textarea>
-          <div class="gemini-note-footer">
-            <button class="gemini-note-save" id="saveGeminiNoteBtn"
-                    type="button" onclick="saveCurrentGeminiNote()">
-              儲存我的 AI 筆記
-            </button>
-            <button class="gemini-note-delete" id="deleteGeminiNoteBtn"
-                    type="button" onclick="deleteCurrentGeminiNote()">
-              刪除筆記
-            </button>
-          </div>
-          <div class="gemini-note-login-hint" id="geminiNoteLoginHint"></div>
-          <div class="gemini-note-status" id="geminiNoteStatus"
-               aria-live="polite"></div>
         </div>
         <div class="summary-card">
           <div class="summary-title">本題總結</div>
