@@ -667,7 +667,7 @@ async function writeProfile(user) {
       displayName: user.displayName || "",
       email: user.email || "",
       lastLoginAt: serverTimestamp(),
-      appVersion: "firebase-option-analysis-editor-v16"
+      appVersion: "firebase-unified-analysis-editor-v17"
     },
     { merge: true }
   );
