@@ -1285,7 +1285,14 @@
       font-size:11px;
       font-weight:900;
     }
-
+    .analysis-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;padding:9px 10px;border:1px solid #dbe8e4;border-radius:12px;background:#f7fbfa}
+    .analysis-tools-note{color:#6d7d7a;font-size:11px;line-height:1.55}.analysis-sync-badge{flex:0 0 auto;padding:5px 8px;border:1px solid #d3dfdc;border-radius:999px;background:#fff;color:#687a76;font-size:10px;font-weight:900}
+    .analysis-content{min-width:0}.analysis-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.analysis-edit-btn{flex:0 0 auto;min-height:34px;padding:6px 10px;border:1px solid #d9c496;border-radius:10px;background:#fff8e8;color:#7b5b22;font-size:10px;font-weight:900}
+    .analysis-custom-badge{display:inline-flex;align-items:center;gap:4px;margin-left:6px;padding:3px 6px;border:1px solid #9fd2bf;border-radius:999px;background:#eaf8f3;color:#24715b;font-size:9px;font-weight:900;vertical-align:middle}.analysis-text{margin-top:7px;padding:10px 11px;border:1px solid transparent;border-radius:11px}.analysis-text.customized{border-color:#b8ddcf;background:#f1faf6;color:#345e53}
+    .analysis-editor{margin-top:10px;padding:11px;border:1px solid #e4ce9b;border-radius:13px;background:#fff9e9}.analysis-editor.hidden{display:none!important}.analysis-editor-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}.analysis-editor-title{color:#76571e;font-size:11px;font-weight:950}.analysis-editor-lock{color:#8e7c57;font-size:9px}
+    .analysis-editor-textarea{width:100%;min-height:130px;padding:11px;resize:vertical;border:1px solid #dcc797;border-radius:11px;background:#fff;color:#34465b;font:inherit;font-size:13px;line-height:1.75;outline:none}.analysis-editor-textarea:focus{border-color:#b99549;box-shadow:0 0 0 3px rgba(185,149,73,.13)}
+    .analysis-editor-actions{display:grid;grid-template-columns:1fr 1fr auto;gap:7px;margin-top:8px}.analysis-editor-actions button{min-height:37px;padding:6px 9px;border-radius:10px;font-size:10px;font-weight:900}.analysis-save-btn{border:1px solid #8fc7b3;background:#eaf8f3;color:#286f5d}.analysis-cancel-btn{border:1px solid #cbd5dd;background:#fff;color:#62717d}.analysis-reset-btn{border:1px solid #dfbbc2;background:#fff2f4;color:#9c4150}.analysis-item-status{min-height:16px;margin-top:6px;color:#6e7d79;font-size:9px;line-height:1.45}.analysis-item-status.ok{color:#237654}.analysis-item-status.error{color:#ad4351}.analysis-item-status.working{color:#8a661e}
+    @media(max-width:620px){.analysis-title-row{display:block}.analysis-edit-btn{margin-top:7px}.analysis-editor-actions{grid-template-columns:1fr 1fr}.analysis-reset-btn{grid-column:1/-1}}
   </style>
 </head>
 <body>
@@ -1299,7 +1306,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">iPhone＋iPad＋電腦 Firebase 同步＋Gemini 筆記鎖定版</div>
+          <div class="brand-sub">iPhone＋iPad＋電腦 Firebase 同步＋逐項分析可修改版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -1677,6 +1684,18 @@ async function openAiQuery(service){
 
   window.open(url,"_blank","noopener,noreferrer");
 }
+
+let optionAnalysisEditCache={};
+function cssId(v){return String(v??"").replace(/[^a-zA-Z0-9_-]/g,"_")}
+function originalOptionAnalysisText(q,key){const a=q?.option_analysis||{},ok=String(key)===String(q?.answer);return a[key]||(ok?(q?.explanation||"此選項符合本題依據。"):(q?.correction||"此選項不符合本題所列規範，請對照正確答案與法源判斷。"))}
+function effectiveOptionAnalysisText(q,key){const x=optionAnalysisEditCache?.[String(key)];return x&&!x.deleted&&String(x.text||"").trim()?String(x.text):originalOptionAnalysisText(q,key)}
+function setOptionAnalysisItemStatus(key,msg,kind=""){const e=document.getElementById(`analysisStatus-${cssId(key)}`);if(e){e.textContent=msg||"";e.className=`analysis-item-status ${kind}`.trim()}}
+function refreshOptionAnalysisItem(q,key){const k=cssId(key),x=optionAnalysisEditCache?.[String(key)],custom=Boolean(x&&!x.deleted&&String(x.text||"").trim()),t=document.getElementById(`analysisText-${k}`),b=document.getElementById(`analysisCustomBadge-${k}`),r=document.getElementById(`analysisResetBtn-${k}`);if(t){t.textContent=effectiveOptionAnalysisText(q,key);t.classList.toggle("customized",custom)}if(b)b.classList.toggle("hidden",!custom);if(r)r.classList.toggle("hidden",!custom)}
+async function loadOptionAnalysisEditsForQuestion(q){optionAnalysisEditCache={};const b=document.getElementById("analysisSyncBadge");if(b)b.textContent="讀取中…";try{const e=await window.firebaseQuizSync?.getOptionAnalysisEdits?.(q.id);optionAnalysisEditCache=e&&typeof e==="object"?e:{};const keys=q.type==="choice"?(q.options||[]).map(o=>String(o.key)):["O","X"];keys.forEach(k=>refreshOptionAnalysisItem(q,k));const n=keys.filter(k=>{const x=optionAnalysisEditCache[k];return x&&!x.deleted&&String(x.text||"").trim()}).length;if(b)b.textContent=n?`已自訂 ${n} 項`:"使用題庫原始分析"}catch(e){if(b)b.textContent="讀取失敗";console.warn(e)}}
+function editOptionAnalysis(key){const q=currentQuestion(),k=cssId(key),ed=document.getElementById(`analysisEditor-${k}`),a=document.getElementById(`analysisEditorText-${k}`);if(!q||!ed||!a)return;a.value=effectiveOptionAnalysisText(q,key);ed.classList.remove("hidden");setOptionAnalysisItemStatus(key,"已解除此項鎖定；修改完成後請按「儲存修改」。","working");setTimeout(()=>a.focus(),50)}
+function cancelOptionAnalysisEdit(key){const ed=document.getElementById(`analysisEditor-${cssId(key)}`);if(ed)ed.classList.add("hidden");setOptionAnalysisItemStatus(key,"未儲存任何變更。")}
+async function saveOptionAnalysisEditUi(key){const q=currentQuestion(),k=cssId(key),a=document.getElementById(`analysisEditorText-${k}`),btn=document.getElementById(`analysisSaveBtn-${k}`),ed=document.getElementById(`analysisEditor-${k}`);if(!q||!a||!btn)return;const text=a.value.trim();if(!text){setOptionAnalysisItemStatus(key,"分析內容不可空白。","error");return}btn.disabled=true;const old=btn.textContent;btn.textContent="儲存中…";try{const r=await window.firebaseQuizSync?.saveOptionAnalysisEdit?.(q.id,String(key),text);optionAnalysisEditCache[String(key)]=r?.item||{text,deleted:false,updatedAtMs:Date.now()};refreshOptionAnalysisItem(q,key);ed?.classList.add("hidden");const n=Object.values(optionAnalysisEditCache).filter(x=>x&&!x.deleted&&String(x.text||"").trim()).length;const badge=document.getElementById("analysisSyncBadge");if(badge)badge.textContent=`已自訂 ${n} 項`;setOptionAnalysisItemStatus(key,r?.location==="cloud"?"修改完成，已同步至 Firestore。":"修改完成，已保存在目前裝置。","ok");toast("逐項分析已修改")}catch(e){setOptionAnalysisItemStatus(key,`儲存失敗：${e?.message||"請稍後再試。"}`,"error")}finally{btn.disabled=false;btn.textContent=old}}
+async function resetOptionAnalysisEditUi(key){const q=currentQuestion(),x=optionAnalysisEditCache?.[String(key)];if(!q||!x||x.deleted)return;if(!confirm("確定將此選項的分析還原為題庫原始內容？"))return;try{const r=await window.firebaseQuizSync?.resetOptionAnalysisEdit?.(q.id,String(key));optionAnalysisEditCache[String(key)]={...x,text:"",deleted:true,updatedAtMs:Date.now()};refreshOptionAnalysisItem(q,key);document.getElementById(`analysisEditor-${cssId(key)}`)?.classList.add("hidden");const n=Object.values(optionAnalysisEditCache).filter(v=>v&&!v.deleted&&String(v.text||"").trim()).length;const b=document.getElementById("analysisSyncBadge");if(b)b.textContent=n?`已自訂 ${n} 項`:"使用題庫原始分析";setOptionAnalysisItemStatus(key,r?.location==="cloud"?"已還原題庫原始分析，並同步至 Firestore。":"已還原題庫原始分析。","ok");toast("已還原原始分析")}catch(e){setOptionAnalysisItemStatus(key,`還原失敗：${e?.message||"請稍後再試。"}`,"error")}}
 
 let geminiNoteUiState={
   questionId:null,
@@ -2198,19 +2217,9 @@ function submitAnswer(){
 
   const analysisHtml=analysisOptions.map(o=>{
     const isAnswer=String(o.key)===String(q.answer);
-    const detail=optionAnalysis[o.key]
-      ||(isAnswer
-        ?(q.explanation||"此選項符合本題依據。")
-        :(q.correction||"此選項不符合本題所列規範，請對照正確答案與法源判斷。"));
-    const tag=isAnswer?"正確選項":"易誤選";
-    return `<div class="analysis-item">
-      <div class="analysis-icon ${isAnswer?"ok":"bad"}">${isAnswer?"✓":"×"}</div>
-      <div>
-        <div class="analysis-title">${esc(o.key)}．${esc(o.text)}</div>
-        <span class="analysis-tag ${isAnswer?"correct":""}">${tag}</span>
-        <div class="analysis-text">${esc(detail)}</div>
-      </div>
-    </div>`
+    const detail=optionAnalysis[o.key]||(isAnswer?(q.explanation||"此選項符合本題依據。"):(q.correction||"此選項不符合本題所列規範，請對照正確答案與法源判斷。"));
+    const tag=isAnswer?"正確選項":"易誤選",safeKey=cssId(o.key);
+    return `<div class="analysis-item"><div class="analysis-icon ${isAnswer?"ok":"bad"}">${isAnswer?"✓":"×"}</div><div class="analysis-content"><div class="analysis-title-row"><div><div class="analysis-title">${esc(o.key)}．${esc(o.text)}</div><span class="analysis-tag ${isAnswer?"correct":""}">${tag}</span><span class="analysis-custom-badge hidden" id="analysisCustomBadge-${safeKey}">✎ 已自訂</span></div><button class="analysis-edit-btn" type="button" onclick="editOptionAnalysis('${safeKey}')">🔒 修改此項分析</button></div><div class="analysis-text" id="analysisText-${safeKey}">${esc(detail)}</div><div class="analysis-editor hidden" id="analysisEditor-${safeKey}"><div class="analysis-editor-head"><div class="analysis-editor-title">修改「${esc(o.key)}」選項分析</div><div class="analysis-editor-lock">🔓 編輯模式</div></div><textarea class="analysis-editor-textarea" id="analysisEditorText-${safeKey}" maxlength="30000"></textarea><div class="analysis-editor-actions"><button class="analysis-save-btn" id="analysisSaveBtn-${safeKey}" type="button" onclick="saveOptionAnalysisEditUi('${safeKey}')">儲存修改</button><button class="analysis-cancel-btn" type="button" onclick="cancelOptionAnalysisEdit('${safeKey}')">取消</button><button class="analysis-reset-btn hidden" id="analysisResetBtn-${safeKey}" type="button" onclick="resetOptionAnalysisEditUi('${safeKey}')">還原原始分析</button></div></div><div class="analysis-item-status" id="analysisStatus-${safeKey}"></div></div></div>`
   }).join("");
 
   const answerKey=q.type==="true_false"
@@ -2230,6 +2239,7 @@ function submitAnswer(){
       </div>
       <div class="analysis-wrap">
         <div class="analysis-heading">逐選項分析</div>
+        <div class="analysis-tools"><div class="analysis-tools-note">原始分析預設鎖定；點「修改此項分析」才可編輯。自訂內容可登入後跨裝置同步。</div><span class="analysis-sync-badge" id="analysisSyncBadge">讀取中…</span></div>
         <div class="analysis-list">${analysisHtml}</div>
         <div class="gemini-note-box" id="geminiNoteBox">
           <div class="gemini-note-head">
@@ -2355,6 +2365,7 @@ function submitAnswer(){
         </div>
       </div>
     </section>`;
+  loadOptionAnalysisEditsForQuestion(q);
   loadGeminiNoteForQuestion(q.id);
   $("submitBtn").classList.add("hidden");
   $("skipBtn").classList.add("hidden");
