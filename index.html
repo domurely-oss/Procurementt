@@ -1516,7 +1516,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">iPhone＋iPad＋電腦 Firebase 同步＋統一修改解析 同步遷移修正版</div>
+          <div class="brand-sub">iPhone＋iPad＋電腦 Firebase 同步＋Gemini 筆記置底版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -2829,6 +2829,21 @@ function submitAnswer(){
                id="analysisBulkStatus"
                aria-live="polite"></div>
         </div>
+        <div class="summary-card">
+          <div class="summary-title-row">
+            <div class="summary-title">
+              本題總結
+              <span class="summary-custom-badge hidden"
+                    id="summaryCustomBadge">✎ 已自訂</span>
+            </div>
+            <span class="summary-lock-badge">🔒 鎖定檢視</span>
+          </div>
+          <p class="summary-text"
+             id="summaryText">${esc(q.explanation||"本題未提供補充解析。")}</p>
+          ${q.correction?`<div class="note correct"><strong>正確說法：</strong>${esc(q.correction)}</div>`:""}
+          ${q.source?`<div class="note source"><strong>主要依據／考點：</strong>${esc(q.source)}</div>`:""}
+          ${q.memory?`<div class="note memory"><strong>記憶重點：</strong>${esc(q.memory)}</div>`:""}
+        </div>
         <div class="gemini-note-box" id="geminiNoteBox">
           <div class="gemini-note-head">
             <div class="gemini-note-title-wrap">
@@ -2943,21 +2958,6 @@ function submitAnswer(){
             <div class="gemini-note-status" id="geminiNoteStatus"
                  aria-live="polite"></div>
           </div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-title-row">
-            <div class="summary-title">
-              本題總結
-              <span class="summary-custom-badge hidden"
-                    id="summaryCustomBadge">✎ 已自訂</span>
-            </div>
-            <span class="summary-lock-badge">🔒 鎖定檢視</span>
-          </div>
-          <p class="summary-text"
-             id="summaryText">${esc(q.explanation||"本題未提供補充解析。")}</p>
-          ${q.correction?`<div class="note correct"><strong>正確說法：</strong>${esc(q.correction)}</div>`:""}
-          ${q.source?`<div class="note source"><strong>主要依據／考點：</strong>${esc(q.source)}</div>`:""}
-          ${q.memory?`<div class="note memory"><strong>記憶重點：</strong>${esc(q.memory)}</div>`:""}
         </div>
       </div>
     </section>`;
@@ -3138,6 +3138,6 @@ if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
 }
 </script>
 <script src="./firebase-config.js"></script>
-<script type="module" src="./firebase-sync.js?v=19"></script>
+<script type="module" src="./firebase-sync.js?v=20"></script>
 </body>
 </html>

@@ -838,7 +838,7 @@ async function writeProfile(user) {
       displayName: user.displayName || "",
       email: user.email || "",
       lastLoginAt: serverTimestamp(),
-      appVersion: "firebase-unified-analysis-editor-v19"
+      appVersion: "firebase-gemini-note-bottom-v20"
     },
     { merge: true }
   );
