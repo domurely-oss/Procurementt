@@ -1516,7 +1516,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">iPhone＋iPad＋電腦 Firebase 同步＋統一修改解析版</div>
+          <div class="brand-sub">iPhone＋iPad＋電腦 Firebase 同步＋統一修改解析 Firestore 修正版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -1896,7 +1896,7 @@ async function openAiQuery(service){
 }
 
 let optionAnalysisEditCache={};
-const SUMMARY_ANALYSIS_KEY="__summary__";
+const SUMMARY_ANALYSIS_KEY="summaryText";
 
 function cssId(v){
   return String(v??"").replace(/[^a-zA-Z0-9_-]/g,"_")
@@ -2181,8 +2181,12 @@ async function saveAnalysisBulkEdits(){
 
     toast(changed?"解析內容已更新":"解析內容沒有變更")
   }catch(error){
+    const rawMessage=String(error?.message||"請稍後再試。");
+    const friendlyMessage=rawMessage.includes("cannot begin and end with")
+      ?"Firestore 欄位名稱格式錯誤，請重新整理至最新版後再儲存。"
+      :rawMessage;
     setAnalysisBulkStatus(
-      `儲存失敗：${error?.message||"請稍後再試。"}`,
+      `儲存失敗：${friendlyMessage}`,
       "error"
     )
   }finally{
