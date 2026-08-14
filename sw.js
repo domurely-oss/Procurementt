@@ -1,4 +1,4 @@
-const CACHE='procurement-quiz-v20';
+const CACHE='procurement-quiz-v21';
 const ASSETS=[
   './',
   './index.html',

@@ -1516,7 +1516,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">iPhone＋iPad＋電腦 Firebase 同步＋Gemini 筆記置底版</div>
+          <div class="brand-sub">iPhone＋iPad＋電腦 Firebase 同步＋記憶重點可修改版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -1897,6 +1897,7 @@ async function openAiQuery(service){
 
 let optionAnalysisEditCache={};
 const SUMMARY_ANALYSIS_KEY="summaryText";
+const MEMORY_ANALYSIS_KEY="memoryText";
 
 function cssId(v){
   return String(v??"").replace(/[^a-zA-Z0-9_-]/g,"_")
@@ -1921,6 +1922,10 @@ function originalSummaryText(q){
   return q?.explanation||"本題未提供補充解析。"
 }
 
+function originalMemoryText(q){
+  return q?.memory||""
+}
+
 function customAnalysisItem(key){
   return optionAnalysisEditCache?.[String(key)]||null
 }
@@ -1942,6 +1947,13 @@ function effectiveSummaryText(q){
   return isAnalysisCustomized(SUMMARY_ANALYSIS_KEY)
     ?String(item.text)
     :originalSummaryText(q)
+}
+
+function effectiveMemoryText(q){
+  const item=customAnalysisItem(MEMORY_ANALYSIS_KEY);
+  return isAnalysisCustomized(MEMORY_ANALYSIS_KEY)
+    ?String(item.text)
+    :originalMemoryText(q)
 }
 
 function refreshOptionAnalysisItem(q,key){
@@ -1969,10 +1981,24 @@ function refreshSummaryAnalysis(q){
   if(badge)badge.classList.toggle("hidden",!customized)
 }
 
+function refreshMemoryAnalysis(q){
+  const memoryBox=document.getElementById("memoryNoteBox");
+  const memoryText=document.getElementById("memoryText");
+  const value=effectiveMemoryText(q);
+
+  if(memoryBox){
+    memoryBox.classList.toggle("hidden",!String(value||"").trim())
+  }
+  if(memoryText){
+    memoryText.textContent=value
+  }
+}
+
 function updateAnalysisSyncBadge(q){
   const keys=[
     ...analysisKeysForQuestion(q),
-    SUMMARY_ANALYSIS_KEY
+    SUMMARY_ANALYSIS_KEY,
+    MEMORY_ANALYSIS_KEY
   ];
   const count=keys.filter(key=>isAnalysisCustomized(key)).length;
   const badge=document.getElementById("analysisSyncBadge");
@@ -1996,6 +2022,7 @@ async function loadOptionAnalysisEditsForQuestion(q){
       refreshOptionAnalysisItem(q,key)
     });
     refreshSummaryAnalysis(q);
+    refreshMemoryAnalysis(q);
     updateAnalysisSyncBadge(q)
   }catch(error){
     if(badge)badge.textContent="讀取失敗";
@@ -2023,6 +2050,9 @@ function openAnalysisBulkEditor(){
   const summaryArea=document.getElementById("analysisBulkSummaryText");
   if(summaryArea)summaryArea.value=effectiveSummaryText(q);
 
+  const memoryArea=document.getElementById("analysisBulkMemoryText");
+  if(memoryArea)memoryArea.value=effectiveMemoryText(q);
+
   editor.classList.remove("hidden");
 
   const button=document.getElementById("analysisGlobalEditBtn");
@@ -2032,7 +2062,7 @@ function openAnalysisBulkEditor(){
   }
 
   setAnalysisBulkStatus(
-    "已解除逐選項分析與本題總結鎖定；完成後請按「儲存全部修改」。",
+    "已解除逐選項分析、本題總結與記憶重點鎖定；完成後請按「儲存全部修改」。",
     "working"
   );
 
@@ -2047,7 +2077,7 @@ function cancelAnalysisBulkEditor(){
 
   const button=document.getElementById("analysisGlobalEditBtn");
   if(button){
-    button.textContent="🔒 修改逐項分析與本題總結";
+    button.textContent="🔒 修改逐項分析、本題總結與記憶重點";
     button.disabled=false
   }
 
@@ -2065,6 +2095,9 @@ function fillAnalysisBulkOriginals(){
 
   const summaryArea=document.getElementById("analysisBulkSummaryText");
   if(summaryArea)summaryArea.value=originalSummaryText(q);
+
+  const memoryArea=document.getElementById("analysisBulkMemoryText");
+  if(memoryArea)memoryArea.value=originalMemoryText(q);
 
   setAnalysisBulkStatus(
     "已將編輯欄填回題庫原始內容；按「儲存全部修改」後才會正式還原。",
@@ -2087,15 +2120,36 @@ async function saveAnalysisBulkEdits(){
       key:SUMMARY_ANALYSIS_KEY,
       text:document.getElementById("analysisBulkSummaryText")?.value.trim()||"",
       original:originalSummaryText(q).trim()
+    },
+    {
+      key:MEMORY_ANALYSIS_KEY,
+      text:document.getElementById("analysisBulkMemoryText")?.value.trim()||"",
+      original:originalMemoryText(q).trim()
     }
   ];
 
-  const empty=targets.find(item=>!item.text);
+  const empty=targets.find(item=>
+    !item.text &&
+    item.key!==MEMORY_ANALYSIS_KEY
+  );
   if(empty){
     setAnalysisBulkStatus(
       empty.key===SUMMARY_ANALYSIS_KEY
         ?"本題總結不可空白。"
         :`選項 ${empty.key} 的分析內容不可空白。`,
+      "error"
+    );
+    return
+  }
+
+  const memoryTarget=targets.find(item=>item.key===MEMORY_ANALYSIS_KEY);
+  if(
+    memoryTarget &&
+    !memoryTarget.text &&
+    memoryTarget.original
+  ){
+    setAnalysisBulkStatus(
+      "記憶重點不可空白；如要恢復原內容，請使用「填回全部原始內容」。",
       "error"
     );
     return
@@ -2159,6 +2213,7 @@ async function saveAnalysisBulkEdits(){
       refreshOptionAnalysisItem(q,key)
     });
     refreshSummaryAnalysis(q);
+    refreshMemoryAnalysis(q);
     updateAnalysisSyncBadge(q);
 
     const editor=document.getElementById("analysisBulkEditor");
@@ -2166,7 +2221,7 @@ async function saveAnalysisBulkEdits(){
 
     const globalBtn=document.getElementById("analysisGlobalEditBtn");
     if(globalBtn){
-      globalBtn.textContent="🔒 修改逐項分析與本題總結";
+      globalBtn.textContent="🔒 修改逐項分析、本題總結與記憶重點";
       globalBtn.disabled=false
     }
 
@@ -2770,7 +2825,7 @@ function submitAnswer(){
         <div class="analysis-heading">逐選項分析</div>
         <div class="analysis-tools">
           <div class="analysis-tools-note">
-            逐選項分析與本題總結預設鎖定；使用同一個修改按鈕即可一次進入編輯模式。
+            逐選項分析、本題總結與記憶重點預設鎖定；使用同一個修改按鈕即可一次進入編輯模式。
           </div>
           <span class="analysis-sync-badge" id="analysisSyncBadge">讀取中…</span>
           <button class="analysis-global-edit-btn"
@@ -2788,7 +2843,7 @@ function submitAnswer(){
             <div>
               <div class="analysis-bulk-title">統一修改解析內容</div>
               <div class="analysis-bulk-note">
-                可一次修改所有選項分析及本題總結；只有按下「儲存全部修改」才會更新。
+                可一次修改所有選項分析、本題總結及記憶重點；只有按下「儲存全部修改」才會更新。
               </div>
             </div>
             <span class="analysis-bulk-lock">🔓 編輯模式</span>
@@ -2805,6 +2860,17 @@ function submitAnswer(){
                       id="analysisBulkSummaryText"
                       maxlength="30000"
                       placeholder="請輸入本題總結"></textarea>
+          </div>
+
+          <div class="analysis-bulk-section">
+            <div class="analysis-bulk-label">
+              <span class="option-pill">記憶</span>
+              <span>記憶重點</span>
+            </div>
+            <textarea class="analysis-bulk-textarea"
+                      id="analysisBulkMemoryText"
+                      maxlength="30000"
+                      placeholder="請輸入記憶重點"></textarea>
           </div>
 
           <div class="analysis-bulk-actions">
@@ -2842,7 +2908,9 @@ function submitAnswer(){
              id="summaryText">${esc(q.explanation||"本題未提供補充解析。")}</p>
           ${q.correction?`<div class="note correct"><strong>正確說法：</strong>${esc(q.correction)}</div>`:""}
           ${q.source?`<div class="note source"><strong>主要依據／考點：</strong>${esc(q.source)}</div>`:""}
-          ${q.memory?`<div class="note memory"><strong>記憶重點：</strong>${esc(q.memory)}</div>`:""}
+          ${(q.memory||isAnalysisCustomized(MEMORY_ANALYSIS_KEY))
+  ?`<div class="note memory" id="memoryNoteBox"><strong>記憶重點：</strong><span id="memoryText">${esc(effectiveMemoryText(q))}</span></div>`
+  :`<div class="note memory hidden" id="memoryNoteBox"><strong>記憶重點：</strong><span id="memoryText"></span></div>`}
         </div>
         <div class="gemini-note-box" id="geminiNoteBox">
           <div class="gemini-note-head">
@@ -3138,6 +3206,6 @@ if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
 }
 </script>
 <script src="./firebase-config.js"></script>
-<script type="module" src="./firebase-sync.js?v=20"></script>
+<script type="module" src="./firebase-sync.js?v=21"></script>
 </body>
 </html>
