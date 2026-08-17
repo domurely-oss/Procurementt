@@ -1468,20 +1468,20 @@
       gap:4px;
       margin-left:6px;
       padding:3px 6px;
-      border:1px solid #9fd2bf;
+      border:1px solid #c8b6e8;
       border-radius:999px;
-      background:#eaf8f3;
-      color:#24715b;
+      background:#f3edff;
+      color:#6a4d9f;
       font-size:9px;
       font-weight:900;
       vertical-align:middle;
     }
     .summary-text.customized{
       padding:10px 11px;
-      border:1px solid #b8ddcf;
+      border:1px solid #cdbce9;
       border-radius:11px;
-      background:#f1faf6;
-      color:#345e53;
+      background:#f7f2ff;
+      color:#51406f;
     }
 
     @media(max-width:620px){
@@ -1503,6 +1503,32 @@
       }
     }
 
+    .ai-note-query-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:9px;
+      max-width:620px;
+      margin:0 auto 9px;
+    }
+    .ai-note-query-actions.three{
+      grid-template-columns:1fr 1fr 1fr;
+      max-width:none;
+    }
+    .gemini-note-btn.chatgpt{
+      border:1px solid #a8b9b4;
+      background:linear-gradient(135deg,#f5faf8,#e9f3ef);
+      color:#315c51;
+    }
+    .gemini-note-btn.gemini{
+      border:1px solid #b5bfe2;
+      background:linear-gradient(135deg,#f4f6ff,#eeeafd);
+      color:#505d9a;
+    }
+    @media(max-width:620px){
+      .ai-note-query-actions,
+      .ai-note-query-actions.three{grid-template-columns:1fr}
+    }
+
   </style>
 </head>
 <body>
@@ -1516,7 +1542,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">iPhone＋iPad＋電腦 Firebase 同步＋記憶重點可修改版</div>
+          <div class="brand-sub">iPhone＋iPad＋電腦 Firebase 同步＋AI筆記雙平台查詢版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -1532,12 +1558,13 @@
     <section id="homeView" class="view active">
       <div class="hero">
         <small>政府採購學習中心</small>
-        <h1>隨時練習，逐題掌握</h1>
-        <p>依主題逐題練習，作答後查看精選詳解與選項分析。</p>
+        <h1>今天想練哪一題？</h1>
+        <p>依主題逐題練習，作答後查看精選詳解與選項分析。登入後可在 iPhone、iPad 與電腦同步學習歷程。</p>
         <div class="chips">
           <span class="chip" id="totalChip"></span>
           <span class="chip" id="categoryChip"></span>
-
+          <span class="chip">離線可用</span>
+          <span class="chip">登入可跨裝置同步</span>
         </div>
       </div>
 
@@ -2303,7 +2330,7 @@ function renderGeminiNotePanel(mode,note=null){
 
   if(mode==="empty"){
     setGeminiNoteBadge("尚未建立");
-    setGeminiNoteStatus("這一題尚未建立 Gemini 個人筆記。");
+    setGeminiNoteStatus("這一題尚未建立 個人 AI 筆記。");
   }
 
   if(mode==="saved"&&note){
@@ -2325,7 +2352,7 @@ function renderGeminiNotePanel(mode,note=null){
     const hasNote=Boolean(note?.text);
     setGeminiNoteBadge(hasNote?"修改中":"新增中","editing");
     if(area)area.value=note?.text||"";
-    if(editorTitle)editorTitle.textContent=hasNote?"修改 Gemini 個人筆記":"新增 Gemini 個人筆記";
+    if(editorTitle)editorTitle.textContent=hasNote?"修改 個人 AI 筆記":"新增個人 AI 筆記";
     if(saveButton)saveButton.textContent=hasNote?"儲存修改":"建立並儲存筆記";
     setGeminiNoteStatus(
       hasNote
@@ -2500,14 +2527,14 @@ async function deleteCurrentGeminiNote(){
     return
   }
 
-  if(!confirm("確定刪除這一題的 Gemini 個人筆記？刪除狀態會同步到其他裝置。")){
+  if(!confirm("確定刪除這一題的個人 AI 筆記？刪除狀態會同步到其他裝置。")){
     return
   }
 
   button.disabled=true;
   const oldLabel=button.textContent;
   button.textContent="刪除中…";
-  setGeminiNoteStatus("正在刪除 Gemini 個人筆記…","working");
+  setGeminiNoteStatus("正在刪除 個人 AI 筆記…","working");
 
   try{
     const result=await window.firebaseQuizSync?.deleteGeminiNote?.(q.id);
@@ -2916,8 +2943,8 @@ function submitAnswer(){
             <div class="gemini-note-title-wrap">
               <div class="gemini-note-logo">✨</div>
               <div>
-                <div class="gemini-note-title">Gemini 個人 AI 筆記</div>
-                <div class="gemini-note-subtitle">免 API・可自行修改・登入後跨裝置同步</div>
+                <div class="gemini-note-title">個人 AI 筆記</div>
+                <div class="gemini-note-subtitle">免 API・支援 ChatGPT / Gemini 查詢・登入後跨裝置同步</div>
               </div>
             </div>
             <span class="gemini-note-badge" id="geminiNoteBadge">讀取中</span>
@@ -2929,11 +2956,15 @@ function submitAnswer(){
               <div class="gemini-note-empty-icon">📝</div>
               <div class="gemini-note-empty-title">這一題還沒有個人筆記</div>
               <div class="gemini-note-empty-text">
-                可先將題目複製到 Gemini 查詢，再把回答貼回來保存；
+                可將題目複製到 ChatGPT 或 Gemini 查詢，再把回答貼回來保存；
                 也可以直接建立自己的重點整理。
               </div>
-              <div class="gemini-note-empty-actions">
-                <button class="gemini-note-btn primary" type="button"
+              <div class="ai-note-query-actions three">
+                <button class="gemini-note-btn chatgpt" type="button"
+                        onclick="openAiQuery('chatgpt')">
+                  複製題目並開啟 ChatGPT
+                </button>
+                <button class="gemini-note-btn gemini" type="button"
                         onclick="openAiQuery('gemini')">
                   複製題目並開啟 Gemini
                 </button>
@@ -2985,20 +3016,24 @@ function submitAnswer(){
               <div class="gemini-note-editor-head">
                 <div>
                   <div class="gemini-note-editor-title" id="geminiNoteEditorTitle">
-                    新增 Gemini 個人筆記
+                    新增 個人 AI 筆記
                   </div>
                   <div class="gemini-note-editor-help">
-                    可貼上 Gemini 回答，再自行刪修、補充及整理重點。
+                    可貼上 ChatGPT 或 Gemini 回答，再自行刪修、補充及整理重點。
                   </div>
                 </div>
               </div>
               <div class="gemini-note-edit-unlocked">
                 🔓 已解除鎖定，目前可修改內容；尚未儲存前可按「取消」返回原筆記。
               </div>
-              <div class="gemini-note-editor-tools">
-                <button class="gemini-note-btn primary" type="button"
+              <div class="ai-note-query-actions three">
+                <button class="gemini-note-btn chatgpt" type="button"
+                        onclick="openAiQuery('chatgpt')">
+                  開啟 ChatGPT 查詢
+                </button>
+                <button class="gemini-note-btn gemini" type="button"
                         onclick="openAiQuery('gemini')">
-                  複製題目並開啟 Gemini
+                  開啟 Gemini 查詢
                 </button>
                 <button class="gemini-note-btn secondary" type="button"
                         onclick="pasteGeminiNoteFromClipboard()">
@@ -3008,7 +3043,7 @@ function submitAnswer(){
               <div class="gemini-note-copy-status" id="aiCopyStatus"></div>
               <textarea class="gemini-note-textarea" id="geminiNoteText"
                         maxlength="100000"
-                        placeholder="請在此貼上 Gemini 分析，或輸入自己的學習筆記。"></textarea>
+                        placeholder="請在此貼上 ChatGPT / Gemini 分析，或輸入自己的學習筆記。"></textarea>
               <div class="gemini-note-editor-footer">
                 <button class="gemini-note-btn success" id="saveGeminiNoteBtn"
                         type="button" onclick="saveCurrentGeminiNote()">
@@ -3205,6 +3240,6 @@ if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
 }
 </script>
 <script src="./firebase-config.js"></script>
-<script type="module" src="./firebase-sync.js?v=21"></script>
+<script type="module" src="./firebase-sync.js?v=23"></script>
 </body>
 </html>

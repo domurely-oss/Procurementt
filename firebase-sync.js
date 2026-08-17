@@ -838,7 +838,7 @@ async function writeProfile(user) {
       displayName: user.displayName || "",
       email: user.email || "",
       lastLoginAt: serverTimestamp(),
-      appVersion: "firebase-memory-editor-v21"
+      appVersion: "firebase-ai-note-dual-platform-v23"
     },
     { merge: true }
   );
