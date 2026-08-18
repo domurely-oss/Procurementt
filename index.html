@@ -1534,6 +1534,19 @@
       .ai-note-query-actions.three{grid-template-columns:1fr}
     }
 
+    .ai-note-query-actions.four{
+      grid-template-columns:1fr 1fr;
+      max-width:720px;
+    }
+    .gemini-note-btn.copy-only{
+      border:1px solid #d8c6a7;
+      background:linear-gradient(135deg,#fffaf1,#f7efe2);
+      color:#745b37;
+    }
+    @media(max-width:620px){
+      .ai-note-query-actions.four{grid-template-columns:1fr}
+    }
+
   </style>
 </head>
 <body>
@@ -1547,7 +1560,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">V23 AI筆記雙平台＋記憶重點換行＋總結藍灰版</div>
+          <div class="brand-sub">V23 AI筆記雙平台＋純複製題目＋記憶重點換行版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -1871,6 +1884,61 @@ function numberOptionStatus(q){
     return skipped>1?`【曾略過 ${skipped} 次】`:"【曾略過】"
   }
   return ""
+}
+
+function buildPlainQuestionText(q){
+  if(!q)return "";
+
+  const options=q.type==="choice"
+    ?(q.options||[]).map(o=>`(${o.key}) ${o.text}`).join("\n")
+    :"O 正確\nX 錯誤";
+
+  return [
+    `題目：${q.question}`,
+    options?`選項：\n${options}`:""
+  ].filter(Boolean).join("\n");
+}
+
+async function copyQuestionOnly(){
+  const q=currentQuestion();
+  if(!q)return;
+
+  const text=buildPlainQuestionText(q);
+  let copied=false;
+
+  try{
+    await navigator.clipboard.writeText(text);
+    copied=true
+  }catch{
+    const area=document.createElement("textarea");
+    area.value=text;
+    area.style.position="fixed";
+    area.style.left="-9999px";
+    area.style.opacity="0";
+    document.body.appendChild(area);
+    area.focus();
+    area.select();
+    try{
+      copied=document.execCommand("copy")
+    }catch{}
+    area.remove()
+  }
+
+  const copyStatus=document.getElementById("aiCopyStatus");
+  if(copyStatus){
+    copyStatus.textContent=copied
+      ?"已單純複製題目與選項，不會開啟任何 AI 網頁。"
+      :"瀏覽器未允許自動複製，請長按題目手動複製。"
+  }
+
+  setGeminiNoteStatus(
+    copied
+      ?"已複製題目與選項；未包含答案、法源或 AI 提示詞，也不會開啟外部網站。"
+      :"複製失敗，請長按題目內容手動複製。",
+    copied?"ok":"error"
+  );
+
+  toast(copied?"題目已複製":"題目複製失敗")
 }
 
 function buildAiQueryText(q){
@@ -2974,10 +3042,14 @@ function submitAnswer(){
               <div class="gemini-note-empty-icon">📝</div>
               <div class="gemini-note-empty-title">這一題還沒有個人筆記</div>
               <div class="gemini-note-empty-text">
-                可將題目複製到 ChatGPT 或 Gemini 查詢，再把回答貼回來保存；
+                可單純複製題目，也可複製後開啟 ChatGPT 或 Gemini 查詢，再把回答貼回來保存；
                 也可以直接建立自己的重點整理。
               </div>
-              <div class="ai-note-query-actions three">
+              <div class="ai-note-query-actions four">
+                <button class="gemini-note-btn copy-only" type="button"
+                        onclick="copyQuestionOnly()">
+                  📋 單純複製題目
+                </button>
                 <button class="gemini-note-btn chatgpt" type="button"
                         onclick="openAiQuery('chatgpt')">
                   複製題目並開啟 ChatGPT
@@ -3044,7 +3116,11 @@ function submitAnswer(){
               <div class="gemini-note-edit-unlocked">
                 🔓 已解除鎖定，目前可修改內容；尚未儲存前可按「取消」返回原筆記。
               </div>
-              <div class="ai-note-query-actions three">
+              <div class="ai-note-query-actions four">
+                <button class="gemini-note-btn copy-only" type="button"
+                        onclick="copyQuestionOnly()">
+                  📋 單純複製題目
+                </button>
                 <button class="gemini-note-btn chatgpt" type="button"
                         onclick="openAiQuery('chatgpt')">
                   開啟 ChatGPT 查詢
@@ -3254,10 +3330,10 @@ window.quizSyncBridge={
 
 init();
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
-  navigator.serviceWorker.register("./sw.js?v=23.1").catch(()=>{})
+  navigator.serviceWorker.register("./sw.js?v=23.2").catch(()=>{})
 }
 </script>
 <script src="./firebase-config.js"></script>
-<script type="module" src="./firebase-sync.js?v=23.1"></script>
+<script type="module" src="./firebase-sync.js?v=23.2"></script>
 </body>
 </html>
