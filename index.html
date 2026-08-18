@@ -1468,20 +1468,25 @@
       gap:4px;
       margin-left:6px;
       padding:3px 6px;
-      border:1px solid #c8b6e8;
+      border:1px solid #b7cee2;
       border-radius:999px;
-      background:#f3edff;
-      color:#6a4d9f;
+      background:#edf5fb;
+      color:#416987;
       font-size:9px;
       font-weight:900;
       vertical-align:middle;
     }
     .summary-text.customized{
       padding:10px 11px;
-      border:1px solid #cdbce9;
+      border:1px solid #bdd1e2;
       border-radius:11px;
-      background:#f7f2ff;
-      color:#51406f;
+      background:#f0f6fb;
+      color:#405f78;
+    }
+    .note.memory #memoryText{
+      white-space:pre-wrap;
+      overflow-wrap:anywhere;
+      word-break:break-word;
     }
 
     @media(max-width:620px){
@@ -1542,7 +1547,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">iPhone＋iPad＋電腦 Firebase 同步＋AI筆記雙平台查詢版</div>
+          <div class="brand-sub">V23 AI筆記雙平台＋記憶重點換行＋總結藍灰版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -1948,8 +1953,15 @@ function originalSummaryText(q){
   return q?.explanation||"本題未提供補充解析。"
 }
 
+function normalizeMemoryMultiline(value){
+  return String(value??"")
+    .replace(/\r\n?/g,"\n")
+    .replace(/[ \t]+$/gm,"")
+    .trim()
+}
+
 function originalMemoryText(q){
-  return q?.memory||""
+  return normalizeMemoryMultiline(q?.memory||"")
 }
 
 function customAnalysisItem(key){
@@ -2016,7 +2028,7 @@ function refreshMemoryAnalysis(q){
     memoryBox.classList.toggle("hidden",!String(value||"").trim())
   }
   if(memoryText){
-    memoryText.textContent=value
+    memoryText.textContent=normalizeMemoryMultiline(value)
   }
 }
 
@@ -2077,7 +2089,9 @@ function openAnalysisBulkEditor(){
   if(summaryArea)summaryArea.value=effectiveSummaryText(q);
 
   const memoryArea=document.getElementById("analysisBulkMemoryText");
-  if(memoryArea)memoryArea.value=effectiveMemoryText(q);
+  if(memoryArea){
+    memoryArea.value=normalizeMemoryMultiline(effectiveMemoryText(q))
+  }
 
   editor.classList.remove("hidden");
 
@@ -2123,7 +2137,9 @@ function fillAnalysisBulkOriginals(){
   if(summaryArea)summaryArea.value=originalSummaryText(q);
 
   const memoryArea=document.getElementById("analysisBulkMemoryText");
-  if(memoryArea)memoryArea.value=originalMemoryText(q);
+  if(memoryArea){
+    memoryArea.value=normalizeMemoryMultiline(originalMemoryText(q))
+  }
 
   setAnalysisBulkStatus(
     "已將編輯欄填回題庫原始內容；按「儲存全部修改」後才會正式還原。",
@@ -2149,8 +2165,10 @@ async function saveAnalysisBulkEdits(){
     },
     {
       key:MEMORY_ANALYSIS_KEY,
-      text:document.getElementById("analysisBulkMemoryText")?.value.trim()||"",
-      original:originalMemoryText(q).trim()
+      text:normalizeMemoryMultiline(
+        document.getElementById("analysisBulkMemoryText")?.value||""
+      ),
+      original:normalizeMemoryMultiline(originalMemoryText(q))
     }
   ];
 
@@ -3236,10 +3254,10 @@ window.quizSyncBridge={
 
 init();
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
-  navigator.serviceWorker.register("sw.js").catch(()=>{})
+  navigator.serviceWorker.register("./sw.js?v=23.1").catch(()=>{})
 }
 </script>
 <script src="./firebase-config.js"></script>
-<script type="module" src="./firebase-sync.js?v=23"></script>
+<script type="module" src="./firebase-sync.js?v=23.1"></script>
 </body>
 </html>
