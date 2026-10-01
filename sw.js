@@ -1,4 +1,4 @@
-const CACHE='procurement-quiz-v23';
+const CACHE='procurement-quiz-v23-2-9';
 const ASSETS=[
   './',
   './index.html',
@@ -6,7 +6,16 @@ const ASSETS=[
   './firebase-sync.js',
   './manifest.webmanifest',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  "./law-parts.json",
+  "./law-assets/part001/page-001.png",
+  "./law-assets/part001/page-002.png",
+  "./law-assets/part001/page-003.png",
+  "./law-assets/part001/page-004.png",
+  "./law-assets/part001/page-005.png",
+  "./law-assets/part001/page-006.png",
+  "./law-assets/part001/page-007.png",
+  "./law-assets/part001/page-008.png"
 ];
 
 self.addEventListener('install',event=>{

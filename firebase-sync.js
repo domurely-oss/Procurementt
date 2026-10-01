@@ -22,8 +22,15 @@ import {
   setDoc,
   deleteDoc,
   writeBatch,
-  serverTimestamp
+  serverTimestamp,
+  query,
+  orderBy,
+  limit as queryLimit
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import {
+  getFunctions,
+  httpsCallable
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js";
 
 const config = window.FIREBASE_CONFIG || {};
 const bridge = window.quizSyncBridge;
@@ -38,6 +45,12 @@ let progressShadow = {};
 let sessionShadow = null;
 let progressTimer = null;
 let sessionTimer = null;
+let functions = null;
+let recordUserAccessCallable = null;
+let currentRole = "user";
+let usageHeartbeatTimer = null;
+let adminDashboardState = { users: [], logs: [], activeTab: "users" };
+const APP_VERSION = "firebase-v23-2-9-admin-console";
 
 const GEMINI_NOTE_STORAGE_KEY = "procurement_quiz_gemini_notes_v1";
 const OPTION_ANALYSIS_EDIT_STORAGE_KEY = "procurement_quiz_option_analysis_edits_v1";
@@ -838,7 +851,7 @@ async function writeProfile(user) {
       displayName: user.displayName || "",
       email: user.email || "",
       lastLoginAt: serverTimestamp(),
-      appVersion: "firebase-ai-note-dual-platform-v23"
+      appVersion: APP_VERSION
     },
     { merge: true }
   );
@@ -908,7 +921,10 @@ async function syncAll(showMessage = true) {
     setSyncState(`已同步・${time}`, "ok");
     setText("[data-last-sync]", `最後同步：${time}`);
     showAuthMessage(`同步完成・${time}`);
-    if (showMessage) bridge?.toast?.("雲端學習紀錄同步完成");
+    if (showMessage) {
+      bridge?.toast?.("雲端學習紀錄同步完成");
+      recordUsage("sync", true);
+    }
     return true;
   } catch (error) {
     console.error("Firebase sync failed:", error);
@@ -1090,6 +1106,337 @@ async function testFirebaseConnection() {
   }
 }
 
+
+function escapeAdmin(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function setRoleUi(role) {
+  currentRole = role === "admin" ? "admin" : "user";
+  setText("[data-auth-role]", currentRole === "admin" ? "管理者" : "一般使用者");
+  all("[data-auth-role]").forEach((node) => {
+    node.classList.toggle("admin", currentRole === "admin");
+  });
+  setHidden("[data-admin-only]", currentRole !== "admin");
+}
+
+async function refreshUserRole(user) {
+  if (!user || !db) {
+    setRoleUi("user");
+    return "user";
+  }
+
+  try {
+    const snap = await getDoc(doc(db, "adminUsers", user.uid));
+    const isAdmin = snap.exists() && snap.data()?.enabled !== false;
+    setRoleUi(isAdmin ? "admin" : "user");
+  } catch (error) {
+    console.warn("Unable to read admin role:", error);
+    setRoleUi("user");
+  }
+
+  return currentRole;
+}
+
+function firestoreDate(value) {
+  if (!value) return null;
+  if (typeof value.toDate === "function") return value.toDate();
+  if (value instanceof Date) return value;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function formatAdminDate(value) {
+  const date = firestoreDate(value);
+  if (!date) return "—";
+  return new Intl.DateTimeFormat("zh-TW", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
+}
+
+function deviceLabel(userAgent = "") {
+  const ua = String(userAgent || "");
+  if (/iPad/i.test(ua)) return "iPad";
+  if (/iPhone/i.test(ua)) return "iPhone";
+  if (/Android/i.test(ua)) return "Android";
+  if (/Windows/i.test(ua)) return "Windows";
+  if (/Macintosh|Mac OS X/i.test(ua)) return "Mac";
+  if (/Linux/i.test(ua)) return "Linux";
+  return ua ? "其他裝置" : "—";
+}
+
+function usageEventLabel(event) {
+  const labels = {
+    access: "登入／開啟",
+    heartbeat: "持續使用",
+    sync: "手動同步"
+  };
+  return labels[event] || String(event || "使用");
+}
+
+async function recordUsage(event = "access", force = false) {
+  const user = currentUser || auth?.currentUser || null;
+  if (!user || !recordUserAccessCallable || !navigator.onLine) return false;
+
+  if (!force && event === "heartbeat") {
+    const key = `procurement_admin_usage_heartbeat_${user.uid}`;
+    const last = Number(localStorage.getItem(key) || 0);
+    if (Date.now() - last < 10 * 60 * 1000) return false;
+    localStorage.setItem(key, String(Date.now()));
+  }
+
+  try {
+    await recordUserAccessCallable({
+      event,
+      appVersion: APP_VERSION,
+      page: location.pathname,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || ""
+    });
+    return true;
+  } catch (error) {
+    // 管理紀錄不應阻擋正常作答或同步；部署 Cloud Function 前會安靜略過。
+    console.warn("Usage log skipped:", error);
+    return false;
+  }
+}
+
+function startUsageHeartbeat() {
+  clearInterval(usageHeartbeatTimer);
+  usageHeartbeatTimer = setInterval(() => {
+    if (document.visibilityState === "visible" && currentUser && navigator.onLine) {
+      recordUsage("heartbeat");
+    }
+  }, 5 * 60 * 1000);
+}
+
+function stopUsageHeartbeat() {
+  clearInterval(usageHeartbeatTimer);
+  usageHeartbeatTimer = null;
+}
+
+function openAdminModal() {
+  if (currentRole !== "admin") {
+    bridge?.toast?.("此功能僅限管理者");
+    return;
+  }
+  document.getElementById("adminModal")?.classList.remove("hidden");
+  loadAdminDashboard();
+}
+
+function closeAdminModal() {
+  document.getElementById("adminModal")?.classList.add("hidden");
+}
+
+function setAdminStatus(message, error = false) {
+  const box = document.getElementById("adminStatus");
+  if (!box) return;
+  box.textContent = message;
+  box.style.color = error ? "#a04f45" : "";
+}
+
+function setAdminTab(tab) {
+  adminDashboardState.activeTab = tab === "logs" ? "logs" : "users";
+  all("[data-admin-tab]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.adminTab === adminDashboardState.activeTab);
+  });
+  document.getElementById("adminUsersPanel")?.classList.toggle("hidden", adminDashboardState.activeTab !== "users");
+  document.getElementById("adminLogsPanel")?.classList.toggle("hidden", adminDashboardState.activeTab !== "logs");
+}
+
+function adminSearchText() {
+  return (document.getElementById("adminSearchInput")?.value || "").trim().toLowerCase();
+}
+
+function renderAdminUsers() {
+  const body = document.getElementById("adminUsersBody");
+  if (!body) return;
+  const q = adminSearchText();
+  const rows = adminDashboardState.users.filter((item) => {
+    if (!q) return true;
+    return [item.displayName, item.email, item.uid, item.ip, item.device]
+      .join(" ")
+      .toLowerCase()
+      .includes(q);
+  });
+
+  if (!rows.length) {
+    body.innerHTML = '<tr><td colspan="6"><div class="admin-empty">找不到符合的使用者。</div></td></tr>';
+    return;
+  }
+
+  body.innerHTML = rows.map((item) => {
+    const isSelf = item.uid === currentUser?.uid;
+    const role = item.isAdmin ? "管理者" : "一般使用者";
+    const action = isSelf
+      ? '<span class="admin-user-sub">目前登入帳號不可自行降權</span>'
+      : item.isAdmin
+        ? `<button class="admin-action-btn demote" type="button" data-role-action="user" data-role-uid="${escapeAdmin(item.uid)}">改為一般使用者</button>`
+        : `<button class="admin-action-btn promote" type="button" data-role-action="admin" data-role-uid="${escapeAdmin(item.uid)}">設為管理者</button>`;
+
+    return `<tr>
+      <td><div class="admin-user-main">${escapeAdmin(item.displayName || item.email || "未命名")}</div><div class="admin-user-sub">${escapeAdmin(item.email || "")}</div><div class="admin-user-sub">UID：${escapeAdmin(item.uid)}</div></td>
+      <td><span class="admin-role-pill ${item.isAdmin ? "admin" : ""}">${role}</span></td>
+      <td>${escapeAdmin(formatAdminDate(item.lastSeenAt || item.lastLoginAt))}</td>
+      <td class="admin-ip">${escapeAdmin(item.ip || "—")}</td>
+      <td title="${escapeAdmin(item.userAgent || "")}">${escapeAdmin(item.device || "—")}</td>
+      <td>${action}</td>
+    </tr>`;
+  }).join("");
+
+  body.querySelectorAll("[data-role-action]").forEach((button) => {
+    button.addEventListener("click", () => {
+      changeUserRole(button.dataset.roleUid, button.dataset.roleAction);
+    });
+  });
+}
+
+function renderAdminLogs() {
+  const body = document.getElementById("adminLogsBody");
+  if (!body) return;
+  const q = adminSearchText();
+  const rows = adminDashboardState.logs.filter((item) => {
+    if (!q) return true;
+    return [item.displayName, item.email, item.uid, item.ip, item.userAgent, item.event]
+      .join(" ")
+      .toLowerCase()
+      .includes(q);
+  });
+
+  if (!rows.length) {
+    body.innerHTML = '<tr><td colspan="5"><div class="admin-empty">尚無符合的使用紀錄。Cloud Function 部署後，新登入／使用紀錄才會開始累積。</div></td></tr>';
+    return;
+  }
+
+  body.innerHTML = rows.map((item) => `<tr>
+    <td>${escapeAdmin(formatAdminDate(item.createdAt))}</td>
+    <td><div class="admin-user-main">${escapeAdmin(item.displayName || item.email || "未命名")}</div><div class="admin-user-sub">${escapeAdmin(item.email || item.uid || "")}</div></td>
+    <td>${escapeAdmin(usageEventLabel(item.event))}</td>
+    <td class="admin-ip">${escapeAdmin(item.ip || "—")}</td>
+    <td title="${escapeAdmin(item.userAgent || "")}">${escapeAdmin(deviceLabel(item.userAgent))}</td>
+  </tr>`).join("");
+}
+
+async function loadAdminDashboard() {
+  if (currentRole !== "admin" || !db || !currentUser) {
+    setAdminStatus("沒有管理者權限。", true);
+    return;
+  }
+
+  setAdminStatus("正在讀取使用者與使用紀錄…");
+  const refresh = document.getElementById("adminRefreshBtn");
+  if (refresh) refresh.disabled = true;
+
+  try {
+    const [usersSnap, adminsSnap, accessSnap, logsSnap] = await Promise.all([
+      getDocs(collection(db, "users")),
+      getDocs(collection(db, "adminUsers")),
+      getDocs(collection(db, "userAccess")),
+      getDocs(query(collection(db, "usageLogs"), orderBy("createdAt", "desc"), queryLimit(300)))
+    ]);
+
+    const adminIds = new Set(
+      adminsSnap.docs.filter((d) => d.data()?.enabled !== false).map((d) => d.id)
+    );
+    const accessMap = new Map(accessSnap.docs.map((d) => [d.id, d.data() || {}]));
+    const userMap = new Map();
+
+    usersSnap.docs.forEach((d) => {
+      userMap.set(d.id, { uid: d.id, ...(d.data() || {}) });
+    });
+    accessSnap.docs.forEach((d) => {
+      if (!userMap.has(d.id)) userMap.set(d.id, { uid: d.id });
+    });
+
+    const users = [...userMap.values()].map((profile) => {
+      const access = accessMap.get(profile.uid) || {};
+      return {
+        uid: profile.uid,
+        displayName: access.displayName || profile.displayName || "",
+        email: access.email || profile.email || "",
+        isAdmin: adminIds.has(profile.uid),
+        lastSeenAt: access.lastSeenAt || profile.lastLoginAt || null,
+        lastLoginAt: profile.lastLoginAt || null,
+        ip: access.lastIp || "",
+        userAgent: access.lastUserAgent || "",
+        device: deviceLabel(access.lastUserAgent || "")
+      };
+    }).sort((a, b) => {
+      const ad = firestoreDate(a.lastSeenAt)?.getTime() || 0;
+      const bd = firestoreDate(b.lastSeenAt)?.getTime() || 0;
+      return bd - ad;
+    });
+
+    const logs = logsSnap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+    adminDashboardState.users = users;
+    adminDashboardState.logs = logs;
+
+    const now = Date.now();
+    const active24 = users.filter((u) => {
+      const t = firestoreDate(u.lastSeenAt)?.getTime() || 0;
+      return t && now - t <= 24 * 60 * 60 * 1000;
+    }).length;
+
+    const setValue = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = String(value);
+    };
+    setValue("adminUserCount", users.length);
+    setValue("adminAdminCount", users.filter((u) => u.isAdmin).length);
+    setValue("adminActive24Count", active24);
+    setValue("adminLogCount", logs.length);
+
+    renderAdminUsers();
+    renderAdminLogs();
+    setAdminStatus(`已載入 ${users.length} 個帳號、最近 ${logs.length} 筆使用紀錄。`);
+  } catch (error) {
+    console.error("Admin dashboard failed:", error);
+    setAdminStatus(`管理資料讀取失敗：${friendlyFirebaseError(error)}`, true);
+  } finally {
+    if (refresh) refresh.disabled = false;
+  }
+}
+
+async function changeUserRole(uid, role) {
+  if (currentRole !== "admin" || !currentUser || !db) return;
+  if (!uid || uid === currentUser.uid) {
+    bridge?.toast?.("目前登入的管理者不可自行降權");
+    return;
+  }
+
+  const target = adminDashboardState.users.find((u) => u.uid === uid);
+  const ref = doc(db, "adminUsers", uid);
+
+  try {
+    setAdminStatus("正在更新帳號角色…");
+    if (role === "admin") {
+      await setDoc(ref, {
+        enabled: true,
+        email: target?.email || "",
+        displayName: target?.displayName || "",
+        updatedAt: serverTimestamp(),
+        updatedBy: currentUser.uid
+      }, { merge: true });
+      bridge?.toast?.("已設為管理者");
+    } else {
+      await deleteDoc(ref);
+      bridge?.toast?.("已改為一般使用者");
+    }
+    await loadAdminDashboard();
+  } catch (error) {
+    console.error(error);
+    setAdminStatus(`角色更新失敗：${friendlyFirebaseError(error)}`, true);
+  }
+}
+
 window.firebaseQuizSync = {
   queueProgressSync,
   queueSessionSync,
@@ -1100,12 +1447,32 @@ window.firebaseQuizSync = {
   deleteGeminiNote,
   getOptionAnalysisEdits,
   saveOptionAnalysisEdit,
-  resetOptionAnalysisEdit
+  resetOptionAnalysisEdit,
+  getRole: () => currentRole,
+  openAdmin: openAdminModal,
+  recordUsage
 };
 
 function bindUi() {
   all("[data-open-auth]").forEach((button) => {
     button.addEventListener("click", openAuthModal);
+  });
+
+  all("[data-open-admin]").forEach((button) => {
+    button.addEventListener("click", openAdminModal);
+  });
+
+  document.getElementById("closeAdminBtn")?.addEventListener("click", closeAdminModal);
+  document.getElementById("adminModal")?.addEventListener("click", (event) => {
+    if (event.target?.id === "adminModal") closeAdminModal();
+  });
+  document.getElementById("adminRefreshBtn")?.addEventListener("click", loadAdminDashboard);
+  document.getElementById("adminSearchInput")?.addEventListener("input", () => {
+    renderAdminUsers();
+    renderAdminLogs();
+  });
+  all("[data-admin-tab]").forEach((button) => {
+    button.addEventListener("click", () => setAdminTab(button.dataset.adminTab));
   });
 
   document.getElementById("closeAuthBtn")?.addEventListener(
@@ -1226,6 +1593,7 @@ function bindUi() {
 
 bindUi();
 updateAuthUi(null);
+setRoleUi("user");
 
 if (!configured()) {
   showAuthMessage(
@@ -1243,6 +1611,8 @@ if (!configured()) {
     app = initializeApp(config);
     auth = getAuth(app);
     db = getFirestore(app);
+    functions = getFunctions(app, "asia-east1");
+    recordUserAccessCallable = httpsCallable(functions, "recordUserAccess", { timeout: 20000 });
 
     await setPersistence(auth, browserLocalPersistence);
     await getRedirectResult(auth).catch(() => null);
@@ -1251,7 +1621,10 @@ if (!configured()) {
       updateAuthUi(user);
 
       if (user) {
-        showAuthMessage("登入成功，正在同步學習紀錄。");
+        await refreshUserRole(user);
+        recordUsage("access", true);
+        startUsageHeartbeat();
+        showAuthMessage(`登入成功・${currentRole === "admin" ? "管理者" : "一般使用者"}，正在同步學習紀錄。`);
         const success = await syncAll(false);
         if (success) {
           closeAuthModal();
@@ -1259,6 +1632,8 @@ if (!configured()) {
           openAuthModal();
         }
       } else {
+        stopUsageHeartbeat();
+        setRoleUi("user");
         progressShadow = {};
         sessionShadow = null;
       }
@@ -1275,6 +1650,7 @@ if (!configured()) {
         navigator.onLine
       ) {
         syncAll(false);
+        recordUsage("heartbeat");
       }
     });
   } catch (error) {

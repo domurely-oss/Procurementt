@@ -2,29 +2,54 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
+        && get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.enabled == true;
+    }
+
     match /users/{userId} {
-      allow read, create, update, delete:
-        if request.auth != null && request.auth.uid == userId;
+      // 一般使用者只能讀自己的帳號資料；管理者可列出使用者基本資料。
+      allow get: if signedIn() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      allow create, update, delete: if signedIn() && request.auth.uid == userId;
 
+      // 學習內容仍維持本人專用，管理者不會讀到個人答題、筆記或修改內容。
       match /progress/{questionId} {
-        allow read, create, update, delete:
-          if request.auth != null && request.auth.uid == userId;
+        allow read, create, update, delete: if signedIn() && request.auth.uid == userId;
       }
-
       match /state/{stateId} {
-        allow read, create, update, delete:
-          if request.auth != null && request.auth.uid == userId;
+        allow read, create, update, delete: if signedIn() && request.auth.uid == userId;
       }
-
       match /geminiNotes/{questionId} {
-        allow read, create, update, delete:
-          if request.auth != null && request.auth.uid == userId;
+        allow read, create, update, delete: if signedIn() && request.auth.uid == userId;
       }
-
       match /optionAnalysisEdits/{questionId} {
-        allow read, create, update, delete:
-          if request.auth != null && request.auth.uid == userId;
+        allow read, create, update, delete: if signedIn() && request.auth.uid == userId;
       }
+    }
+
+    // 管理者名單：本人可讀取自己的角色；管理者可管理其他帳號角色。
+    // 不允許管理者直接刪除自己的角色，避免把最後一個管理者鎖死。
+    match /adminUsers/{userId} {
+      allow get: if signedIn() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin() && request.auth.uid != userId;
+    }
+
+    // 由 Cloud Function 使用 Admin SDK 寫入；瀏覽器不得自行偽造 IP。
+    match /userAccess/{userId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /usageLogs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false;
     }
 
     match /{document=**} {

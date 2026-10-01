@@ -1893,6 +1893,192 @@
       }
     }
 
+    /* V23.2.9 帳號角色與管理介面 */
+    .account-role-row{
+      display:flex;
+      align-items:center;
+      gap:7px;
+      flex-wrap:wrap;
+      margin-top:6px;
+    }
+    .account-role-badge{
+      display:inline-flex;
+      align-items:center;
+      min-height:24px;
+      padding:3px 8px;
+      border-radius:999px;
+      border:1px solid #ddd3c8;
+      background:#faf6f1;
+      color:#75665b;
+      font-size:10px;
+      font-weight:900;
+    }
+    .account-role-badge.admin{
+      border-color:#b6d3c4;
+      background:#ecf7f1;
+      color:#356b53;
+    }
+    .admin-open-btn{
+      border:1px solid #b7cfc2;
+      background:#f0f8f4;
+      color:#3d6b56;
+      border-radius:999px;
+      min-height:34px;
+      padding:6px 11px;
+      font-weight:900;
+      font-size:11px;
+      cursor:pointer;
+    }
+    .admin-dialog{
+      width:min(1080px,calc(100vw - 24px));
+      max-height:min(88vh,920px);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    .admin-dialog .auth-dialog-body{
+      overflow:auto;
+      padding-bottom:18px;
+    }
+    .admin-privacy-note{
+      margin-bottom:12px;
+      padding:10px 12px;
+      border:1px solid #dfd9cd;
+      border-radius:12px;
+      background:#fffdf8;
+      color:#71675d;
+      font-size:11px;
+      line-height:1.65;
+    }
+    .admin-summary{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:9px;
+      margin-bottom:12px;
+    }
+    .admin-metric{
+      padding:11px;
+      border:1px solid #d9e2dd;
+      border-radius:12px;
+      background:#f8fbf9;
+    }
+    .admin-metric-label{
+      color:#77827c;
+      font-size:9px;
+      font-weight:850;
+    }
+    .admin-metric-value{
+      margin-top:4px;
+      color:#344a40;
+      font-size:20px;
+      font-weight:950;
+    }
+    .admin-toolbar{
+      display:grid;
+      grid-template-columns:minmax(180px,1fr) auto;
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .admin-search{
+      min-height:42px;
+      width:100%;
+      border:1px solid #d4d9d6;
+      border-radius:10px;
+      padding:8px 11px;
+      font-size:13px;
+      background:#fff;
+    }
+    .admin-tabs{
+      display:flex;
+      gap:7px;
+      margin-bottom:10px;
+    }
+    .admin-tab-btn{
+      flex:0 0 auto;
+      min-height:38px;
+      padding:7px 12px;
+      border:1px solid #d5ddd8;
+      border-radius:10px;
+      background:#fff;
+      color:#596760;
+      font-size:11px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .admin-tab-btn.active{
+      border-color:#99baa8;
+      background:#edf7f1;
+      color:#36664f;
+    }
+    .admin-panel-section.hidden{display:none!important}
+    .admin-table-wrap{
+      overflow:auto;
+      border:1px solid #e0e4e1;
+      border-radius:12px;
+      background:#fff;
+    }
+    .admin-table{
+      width:100%;
+      min-width:900px;
+      border-collapse:collapse;
+      font-size:11px;
+    }
+    .admin-table th,
+    .admin-table td{
+      padding:10px 9px;
+      border-bottom:1px solid #ecefed;
+      vertical-align:top;
+      text-align:left;
+      line-height:1.5;
+    }
+    .admin-table th{
+      position:sticky;
+      top:0;
+      z-index:1;
+      background:#f6f9f7;
+      color:#64716a;
+      font-size:10px;
+      font-weight:950;
+      white-space:nowrap;
+    }
+    .admin-user-main{font-weight:900;color:#35443d}
+    .admin-user-sub{margin-top:2px;color:#89918d;font-size:9px;word-break:break-all}
+    .admin-role-pill{
+      display:inline-flex;
+      padding:3px 7px;
+      border-radius:999px;
+      background:#f2f3f2;
+      color:#6d7771;
+      font-size:9px;
+      font-weight:900;
+      white-space:nowrap;
+    }
+    .admin-role-pill.admin{background:#e7f4ed;color:#37674f}
+    .admin-ip{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#4c5e55;white-space:nowrap}
+    .admin-action-btn{
+      min-height:30px;
+      padding:4px 8px;
+      border:1px solid #d2dbd6;
+      border-radius:8px;
+      background:#fff;
+      color:#52635a;
+      font-size:9px;
+      font-weight:900;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .admin-action-btn.promote{border-color:#a9c9b8;background:#eef8f2;color:#35634c}
+    .admin-action-btn.demote{border-color:#e0c4bd;background:#fff4f1;color:#8a5448}
+    .admin-empty{padding:26px 14px;text-align:center;color:#8a928e;font-size:12px}
+    .admin-status{margin-top:9px;color:#78837d;font-size:10px;line-height:1.55}
+    @media(max-width:720px){
+      .admin-summary{grid-template-columns:1fr 1fr}
+      .admin-toolbar{grid-template-columns:1fr}
+      .admin-search{font-size:16px}
+      .admin-tabs{overflow-x:auto}
+      .admin-dialog{width:calc(100vw - 12px);max-height:92vh}
+    }
+
   </style>
 </head>
 <body>
@@ -1906,13 +2092,14 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">V23.2.8 AI筆記＋題目法條高解析版</div>
+          <div class="brand-sub">V23.2.9 AI筆記＋帳號角色管理介面版</div>
         </div>
       </div>
       <div class="topbar-actions">
         <button class="auth-open-btn" type="button" data-open-auth>
           ☁ <span data-auth-button-label>登入同步</span>
         </button>
+        <button class="admin-open-btn hidden" type="button" data-open-admin data-admin-only>🛡 管理</button>
         <button class="icon-btn" id="shareBtn" aria-label="分享">↗</button>
       </div>
     </div>
@@ -2200,6 +2387,9 @@
         <div class="auth-user-card">
           <div class="auth-user-name" data-auth-user-name>已登入使用者</div>
           <div class="auth-user-email" data-auth-user-email></div>
+          <div class="account-role-row">
+            <span class="account-role-badge" data-auth-role>一般使用者</span>
+          </div>
         </div>
         <div class="auth-notice">
           作答、略過與收藏會先保存在本機；有網路時自動同步至 Firestore。
@@ -2214,10 +2404,60 @@
           <span data-sync-button-label>立即同步</span>
         </button>
         <button class="secondary-btn" type="button" data-test-firebase>測試 Firebase 連線</button>
+        <button class="secondary-btn hidden" type="button" data-open-admin data-admin-only>🛡 開啟管理介面</button>
         <button class="secondary-btn" type="button" data-logout>登出</button>
       </div>
 
       <div class="auth-message" id="authMessage"></div>
+    </div>
+  </div>
+</div>
+
+
+<div id="adminModal" class="auth-modal hidden" role="dialog" aria-modal="true" aria-labelledby="adminDialogTitle">
+  <div class="auth-dialog admin-dialog">
+    <div class="auth-dialog-head">
+      <div>
+        <div class="auth-dialog-title" id="adminDialogTitle">管理介面</div>
+        <div class="auth-dialog-sub">管理一般使用者／管理者角色，查看最近使用紀錄與連線來源 IP。</div>
+      </div>
+      <button class="auth-close-btn" id="closeAdminBtn" type="button" aria-label="關閉">×</button>
+    </div>
+    <div class="auth-dialog-body">
+      <div class="admin-privacy-note">
+        IP 為連線時由 Firebase Cloud Function 取得的公開來源 IP。行動網路、NAT、Proxy 或 VPN 可能多人共用同一 IP，因此 IP 僅適合作為系統管理與疑難排查資訊，不代表實際身分或精確位置。
+      </div>
+      <div class="admin-summary">
+        <div class="admin-metric"><div class="admin-metric-label">登入帳號</div><div class="admin-metric-value" id="adminUserCount">0</div></div>
+        <div class="admin-metric"><div class="admin-metric-label">管理者</div><div class="admin-metric-value" id="adminAdminCount">0</div></div>
+        <div class="admin-metric"><div class="admin-metric-label">24小時內使用</div><div class="admin-metric-value" id="adminActive24Count">0</div></div>
+        <div class="admin-metric"><div class="admin-metric-label">最近紀錄</div><div class="admin-metric-value" id="adminLogCount">0</div></div>
+      </div>
+      <div class="admin-toolbar">
+        <input class="admin-search" id="adminSearchInput" type="search" placeholder="搜尋姓名、Email、UID 或 IP">
+        <button class="secondary-btn" id="adminRefreshBtn" type="button">重新整理</button>
+      </div>
+      <div class="admin-tabs">
+        <button class="admin-tab-btn active" type="button" data-admin-tab="users">使用者</button>
+        <button class="admin-tab-btn" type="button" data-admin-tab="logs">使用紀錄／IP</button>
+      </div>
+      <div id="adminUsersPanel" class="admin-panel-section">
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>帳號</th><th>角色</th><th>最後使用</th><th>最近 IP</th><th>裝置</th><th>操作</th></tr></thead>
+            <tbody id="adminUsersBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="adminLogsPanel" class="admin-panel-section hidden">
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>時間</th><th>使用者</th><th>事件</th><th>IP</th><th>裝置</th></tr></thead>
+            <tbody id="adminLogsBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="admin-status" id="adminStatus">尚未載入。</div>
     </div>
   </div>
 </div>
@@ -4260,10 +4500,10 @@ init();
 setupLawReader();
 applyQuestionLawDeepLink();
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
-  navigator.serviceWorker.register("./sw.js?v=23.2.8").catch(()=>{})
+  navigator.serviceWorker.register("./sw.js?v=23.2.9").catch(()=>{})
 }
 </script>
 <script src="./firebase-config.js"></script>
-<script type="module" src="./firebase-sync.js?v=23.2.8"></script>
+<script type="module" src="./firebase-sync.js?v=23.2.9"></script>
 </body>
 </html>
