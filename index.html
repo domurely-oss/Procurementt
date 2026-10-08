@@ -2079,6 +2079,117 @@
       .admin-dialog{width:calc(100vw - 12px);max-height:92vh}
     }
 
+    /* V23.2.9.1 管理權限顯示與診斷（V23.2.9.2沿用） */
+    .account-role-uid{
+      color:#718079;
+      font-size:9px;
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      word-break:break-all;
+    }
+    .admin-role-help{
+      padding:9px 10px;
+      border:1px solid #ddd8cd;
+      border-radius:11px;
+      background:#fffdf8;
+      color:#6f675e;
+      font-size:10px;
+      line-height:1.6;
+    }
+    .admin-role-help.ok{
+      border-color:#bdd7c9;
+      background:#f0f8f4;
+      color:#3f6c56;
+    }
+    .admin-role-help.error{
+      border-color:#e3c2bb;
+      background:#fff5f2;
+      color:#8e554a;
+    }
+
+    /* V23.2.9.2 全題庫隨機抽題 */
+    .random-all-card{
+      margin-top:14px;
+      border-color:#ddcfbf;
+      background:linear-gradient(145deg,#fffdf9,#fbf4eb);
+    }
+    .random-all-intro{
+      margin:-2px 0 11px;
+      color:#796b60;
+      font-size:11px;
+      line-height:1.65;
+    }
+    .random-pick-group{
+      padding:11px;
+      border:1px solid #e2d8ce;
+      border-radius:14px;
+      background:rgba(255,255,255,.78);
+    }
+    .random-pick-group + .random-pick-group{margin-top:10px}
+    .random-pick-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-bottom:8px;
+    }
+    .random-pick-title{
+      color:#5e4d40;
+      font-size:12px;
+      font-weight:950;
+    }
+    .random-pick-available{
+      color:#96867a;
+      font-size:9px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+    .random-count-buttons{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:7px;
+    }
+    .random-count-btn{
+      min-height:42px;
+      padding:7px 6px;
+      border:1px solid #d5c2b0;
+      border-radius:11px;
+      background:#fff8ef;
+      color:#6f513b;
+      font-size:11px;
+      font-weight:950;
+      line-height:1.25;
+      cursor:pointer;
+    }
+    .random-count-btn:hover{
+      background:#fdefdf;
+      border-color:#c89f79;
+    }
+    .random-count-btn.tf{
+      border-color:#c8d8d2;
+      background:#f3f9f6;
+      color:#48675b;
+    }
+    .random-count-btn.tf:hover{
+      background:#eaf5ef;
+      border-color:#9dbfad;
+    }
+    .random-mode-badge{
+      display:inline-flex;
+      align-items:center;
+      margin-bottom:4px;
+      padding:3px 7px;
+      border:1px solid #dccbb9;
+      border-radius:999px;
+      background:#fff8ee;
+      color:#73563d;
+      font-size:9px;
+      font-weight:900;
+    }
+    @media(max-width:620px){
+      .random-count-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .random-count-btn{min-height:46px;font-size:12px}
+    }
+
   </style>
 </head>
 <body>
@@ -2092,7 +2203,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">V23.2.9 AI筆記＋帳號角色管理介面版</div>
+          <div class="brand-sub">V23.2.9.2 AI筆記＋全題庫隨機抽題版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -2156,6 +2267,39 @@
 
             <div style="height:12px"></div>
             <button class="primary-btn" id="startBtn">▶ 練習此主題全部題目</button>
+          </div>
+
+          <div class="card random-all-card">
+            <div class="section-title">全題庫隨機抽題</div>
+            <div class="random-all-intro">
+              不限主題，直接從全部 3,599 題中依題型隨機抽取；每次重新抽題都會產生新的不重複題目組合。
+            </div>
+
+            <div class="random-pick-group">
+              <div class="random-pick-head">
+                <div class="random-pick-title">選擇題</div>
+                <div class="random-pick-available" id="randomChoiceAvailable"></div>
+              </div>
+              <div class="random-count-buttons">
+                <button class="random-count-btn" type="button" data-random-all-type="choice" data-random-count="50">隨機抽 50 題</button>
+                <button class="random-count-btn" type="button" data-random-all-type="choice" data-random-count="100">隨機抽 100 題</button>
+                <button class="random-count-btn" type="button" data-random-all-type="choice" data-random-count="150">隨機抽 150 題</button>
+                <button class="random-count-btn" type="button" data-random-all-type="choice" data-random-count="200">隨機抽 200 題</button>
+              </div>
+            </div>
+
+            <div class="random-pick-group">
+              <div class="random-pick-head">
+                <div class="random-pick-title">是非題</div>
+                <div class="random-pick-available" id="randomTfAvailable"></div>
+              </div>
+              <div class="random-count-buttons">
+                <button class="random-count-btn tf" type="button" data-random-all-type="true_false" data-random-count="25">隨機抽 25 題</button>
+                <button class="random-count-btn tf" type="button" data-random-all-type="true_false" data-random-count="50">隨機抽 50 題</button>
+                <button class="random-count-btn tf" type="button" data-random-all-type="true_false" data-random-count="100">隨機抽 100 題</button>
+                <button class="random-count-btn tf" type="button" data-random-all-type="true_false" data-random-count="150">隨機抽 150 題</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -2389,6 +2533,7 @@
           <div class="auth-user-email" data-auth-user-email></div>
           <div class="account-role-row">
             <span class="account-role-badge" data-auth-role>一般使用者</span>
+            <span class="account-role-uid" data-auth-uid></span>
           </div>
         </div>
         <div class="auth-notice">
@@ -2404,6 +2549,8 @@
           <span data-sync-button-label>立即同步</span>
         </button>
         <button class="secondary-btn" type="button" data-test-firebase>測試 Firebase 連線</button>
+        <button class="secondary-btn" type="button" data-check-admin>🔐 重新檢查管理者權限</button>
+        <div class="admin-role-help" data-admin-role-help>登入後會自動檢查管理者權限。</div>
         <button class="secondary-btn hidden" type="button" data-open-admin data-admin-only>🛡 開啟管理介面</button>
         <button class="secondary-btn" type="button" data-logout>登出</button>
       </div>
@@ -3715,6 +3862,7 @@ function init(){
     renderRecords();
   }));
   $("startBtn").addEventListener("click",startPractice);
+  bindRandomAllPractice();
   $("submitBtn").addEventListener("click",submitAnswer);
   $("skipBtn").addEventListener("click",skipQuestion);
   $("nextBtn").addEventListener("click",nextQuestion);
@@ -3828,6 +3976,55 @@ function renderHome(){
     window.scrollTo({top:0,behavior:"smooth"})
   }))
 }
+function renderRandomAllCounts(){
+  const choiceCount=QUESTIONS.filter(q=>q.type==="choice").length;
+  const tfCount=QUESTIONS.filter(q=>q.type==="true_false").length;
+  if($("randomChoiceAvailable"))$("randomChoiceAvailable").textContent=`全題庫共 ${choiceCount.toLocaleString()} 題`;
+  if($("randomTfAvailable"))$("randomTfAvailable").textContent=`全題庫共 ${tfCount.toLocaleString()} 題`;
+}
+
+function startRandomAllPractice(type,count){
+  const typeLabel=type==="choice"?"選擇題":"是非題";
+  const requested=Number(count)||0;
+  const pool=QUESTIONS.filter(q=>q.type===type).map(q=>q.id);
+
+  if(!requested||!pool.length){
+    toast("此題型目前沒有可抽取題目");
+    return
+  }
+
+  const actual=Math.min(requested,pool.length);
+  const ids=shuffle([...pool]).slice(0,actual);
+
+  session={
+    category:"全部題庫隨機抽題",
+    type,
+    scope:"random_all",
+    order:"random",
+    randomCount:actual,
+    ids,
+    index:0
+  };
+
+  saveSession();
+  selectedAnswer=null;
+  answered=false;
+  showView("practiceView");
+  toast(`已從全部題庫隨機抽取 ${actual} 題${typeLabel}`)
+}
+
+function bindRandomAllPractice(){
+  document.querySelectorAll("[data-random-all-type][data-random-count]").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      startRandomAllPractice(
+        btn.dataset.randomAllType,
+        Number(btn.dataset.randomCount)
+      )
+    })
+  });
+  renderRandomAllCounts()
+}
+
 function startPractice(){
   const category=$("categorySelect").value;
   let ids=[];
@@ -3991,7 +4188,10 @@ function renderQuestion(){
   selectedAnswer=null;answered=false;
   const [status,cls]=statusInfo(q);
   $("questionStatus").textContent=status;$("questionStatus").className=`status ${cls}`;
-  $("quizMeta").innerHTML=`第 <strong>${session.index+1}</strong>／${session.ids.length} 題<br>${esc(q.category)}・${labelType(q.type)}・原題號 ${q.number}`;
+  const randomMode=session?.scope==="random_all"
+    ?`<span class="random-mode-badge">全題庫隨機抽 ${session.randomCount||session.ids.length} 題${labelType(session.type)}</span><br>`
+    :"";
+  $("quizMeta").innerHTML=`${randomMode}第 <strong>${session.index+1}</strong>／${session.ids.length} 題<br>${esc(q.category)}・${labelType(q.type)}・原題號 ${q.number}`;
   $("quizProgress").style.width=`${(session.index+1)/session.ids.length*100}%`;
   $("jumpSelect").innerHTML=session.ids.map((id,i)=>{
     const item=QMAP.get(id);
@@ -4500,10 +4700,10 @@ init();
 setupLawReader();
 applyQuestionLawDeepLink();
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
-  navigator.serviceWorker.register("./sw.js?v=23.2.9").catch(()=>{})
+  navigator.serviceWorker.register("./sw.js?v=23.2.9.2").catch(()=>{})
 }
 </script>
 <script src="./firebase-config.js"></script>
-<script type="module" src="./firebase-sync.js?v=23.2.9"></script>
+<script type="module" src="./firebase-sync.js?v=23.2.9.2"></script>
 </body>
 </html>
