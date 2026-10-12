@@ -2216,6 +2216,26 @@
       }
     }
 
+
+    /* V23.2.9.4 答對／答錯次數提示 */
+    .question-practice-count.correct-count{
+      border-color:#b7d9c5;
+      background:#edf8f2;
+      color:#317052;
+    }
+    .question-practice-count.wrong-count{
+      border-color:#e5bcc2;
+      background:#fff1f3;
+      color:#a84f5a;
+    }
+    @media(max-width:620px){
+      .question-practice-count.correct-count,
+      .question-practice-count.wrong-count{
+        min-height:23px;
+        font-size:10px;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -2229,7 +2249,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">V23.2.9.3 AI筆記＋首頁捲動重疊修正版</div>
+          <div class="brand-sub">V23.2.9.4 AI筆記＋答對答錯次數版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -3074,17 +3094,18 @@ function questionProgress(q){
 }
 function statusInfo(q){
   const p=questionProgress(q);
-  if(p.lastAction==="skipped"){
-    const answeredNote=p.attempts?`・曾作答 ${p.attempts} 次`:"";
-    return [`已略過 ${p.skipped||1} 次${answeredNote}`,"skip"]
+  const correct=Number(p.correct||0);
+  const wrong=Number(p.wrong||0);
+  const skipped=Number(p.skipped||0);
+  const summary=`答對 ${correct} 次・答錯 ${wrong} 次`;
+
+  if(p.lastAction==="skipped" || skipped>0){
+    return [`${summary}・已略過 ${skipped} 次`,"skip"]
   }
   if(!p.attempts){
-    if((p.skipped||0)>0)return [`已略過 ${p.skipped} 次`,"skip"];
-    return ["尚未作答","none"]
+    return [summary,"none"]
   }
-  return p.lastCorrect
-    ?[`已作答 ${p.attempts} 次・上次答對`,"ok"]
-    :[`已作答 ${p.attempts} 次・上次答錯`,"bad"]
+  return [summary,p.lastCorrect?"ok":"bad"]
 }
 function numberOptionStatus(q){
   const p=questionProgress(q);
@@ -4197,11 +4218,13 @@ function applyQuestionLawDeepLink(){
 function renderQuestionPracticeCount(q){
   if(!q)return;
   const p=questionProgress(q);
-  const attempts=Number(p.attempts||0);
+  const correct=Number(p.correct||0);
+  const wrong=Number(p.wrong||0);
   const numberText=`QUESTION ${String(session.index+1).padStart(3,"0")}`;
   $("questionNumber").innerHTML=`
     <span class="question-number-main">${numberText}</span>
-    <span class="question-practice-count ${attempts>0?"has-practice":""}">已練習 ${attempts} 次</span>
+    <span class="question-practice-count correct-count">答對 ${correct} 次</span>
+    <span class="question-practice-count wrong-count">答錯 ${wrong} 次</span>
   `
 }
 
@@ -4262,6 +4285,9 @@ function submitAnswer(){
   };
   saveProgress();answered=true;
   renderQuestionPracticeCount(q);
+  const [updatedStatus,updatedCls]=statusInfo(q);
+  $("questionStatus").textContent=updatedStatus;
+  $("questionStatus").className=`status ${updatedCls}`;
   document.querySelectorAll(".option-btn").forEach(b=>{
     const key=b.dataset.key;
     b.classList.remove("selected");
@@ -4726,10 +4752,10 @@ init();
 setupLawReader();
 applyQuestionLawDeepLink();
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
-  navigator.serviceWorker.register("./sw.js?v=23.2.9.3").catch(()=>{})
+  navigator.serviceWorker.register("./sw.js?v=23.2.9.4").catch(()=>{})
 }
 </script>
 <script src="./firebase-config.js"></script>
-<script type="module" src="./firebase-sync.js?v=23.2.9.3"></script>
+<script type="module" src="./firebase-sync.js?v=23.2.9.4"></script>
 </body>
 </html>
