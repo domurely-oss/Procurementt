@@ -2190,6 +2190,32 @@
       .random-count-btn{min-height:46px;font-size:12px}
     }
 
+  
+    /* V23.2.9.3 首頁捲動重疊修正 */
+    @media (min-width:768px){
+      .home-setup > .card{
+        position:static !important;
+        top:auto !important;
+        margin-bottom:14px !important;
+      }
+      .home-setup > .card:last-child{
+        margin-bottom:0 !important;
+      }
+      .random-all-card{
+        position:static !important;
+        top:auto !important;
+        z-index:auto !important;
+      }
+    }
+
+    /* iPad／桌面橫向低高度時也維持正常文件流 */
+    @media (min-width:1024px) and (max-height:850px){
+      .home-setup > .card{
+        position:static !important;
+        top:auto !important;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -2203,7 +2229,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">V23.2.9.2 AI筆記＋全題庫隨機抽題版</div>
+          <div class="brand-sub">V23.2.9.3 AI筆記＋首頁捲動重疊修正版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -4700,10 +4726,10 @@ init();
 setupLawReader();
 applyQuestionLawDeepLink();
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
-  navigator.serviceWorker.register("./sw.js?v=23.2.9.2").catch(()=>{})
+  navigator.serviceWorker.register("./sw.js?v=23.2.9.3").catch(()=>{})
 }
 </script>
 <script src="./firebase-config.js"></script>
-<script type="module" src="./firebase-sync.js?v=23.2.9.2"></script>
+<script type="module" src="./firebase-sync.js?v=23.2.9.3"></script>
 </body>
 </html>
