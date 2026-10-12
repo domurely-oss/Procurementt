@@ -2217,7 +2217,7 @@
     }
 
 
-    /* V23.2.9.4 答對／答錯次數提示 */
+    /* V23.2.9.4 答對／答錯次數提示（V23.2.9.5沿用） */
     .question-practice-count.correct-count{
       border-color:#b7d9c5;
       background:#edf8f2;
@@ -2236,6 +2236,82 @@
       }
     }
 
+    /* V23.2.9.5 隨機抽題：抽題次數＋三抽不重複 */
+    .random-draw-stats{
+      margin-top:9px;
+      padding:8px 10px;
+      border:1px solid #ded7cf;
+      border-radius:10px;
+      background:#fffdfa;
+      color:#766b63;
+      font-size:10px;
+      line-height:1.6;
+      font-weight:800;
+    }
+    .random-repeat-note{
+      margin-top:7px;
+      color:#8e7e73;
+      font-size:9px;
+      line-height:1.55;
+    }
+    .random-repeat-note.warning{
+      padding:7px 9px;
+      border:1px solid #efd8c7;
+      border-radius:9px;
+      background:#fff8f2;
+      color:#9b6343;
+    }
+    .random-draw-seq-badge{
+      display:inline-flex;
+      align-items:center;
+      margin-left:6px;
+      padding:4px 8px;
+      border-radius:999px;
+      background:#f3eee8;
+      color:#735f50;
+      font-size:9px;
+      font-weight:900;
+      vertical-align:middle;
+    }
+    .random-completion-banner{
+      margin:10px 0 14px;
+      padding:12px 13px;
+      border:1px solid #b9d8c9;
+      border-radius:13px;
+      background:#eff9f4;
+      color:#355f4e;
+    }
+    .random-completion-title{
+      font-size:13px;
+      line-height:1.45;
+      font-weight:950;
+    }
+    .random-completion-meta{
+      margin-top:5px;
+      font-size:10px;
+      line-height:1.65;
+      color:#60786e;
+    }
+    .random-completion-warning{
+      margin-top:7px;
+      padding:7px 9px;
+      border-radius:9px;
+      background:#fff4ea;
+      color:#965f3d;
+      font-size:9px;
+      line-height:1.55;
+      font-weight:800;
+    }
+    @media(max-width:620px){
+      .random-draw-seq-badge{
+        display:inline-flex;
+        margin:5px 0 0 0;
+      }
+      .random-completion-banner{
+        padding:11px;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -2249,7 +2325,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">V23.2.9.4 AI筆記＋答對答錯次數版</div>
+          <div class="brand-sub">V23.2.9.5 AI筆記＋隨機三抽不重複版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -2318,7 +2394,7 @@
           <div class="card random-all-card">
             <div class="section-title">全題庫隨機抽題</div>
             <div class="random-all-intro">
-              不限主題，直接從全部 3,599 題中依題型隨機抽取；每次重新抽題都會產生新的不重複題目組合。
+              不限主題，直接從全部 3,599 題中依題型隨機抽取；每 3 次抽題為一循環，系統會優先避免出現前 2 次已抽過的題目。
             </div>
 
             <div class="random-pick-group">
@@ -2331,7 +2407,13 @@
                 <button class="random-count-btn" type="button" data-random-all-type="choice" data-random-count="100">隨機抽 100 題</button>
                 <button class="random-count-btn" type="button" data-random-all-type="choice" data-random-count="150">隨機抽 150 題</button>
                 <button class="random-count-btn" type="button" data-random-all-type="choice" data-random-count="200">隨機抽 200 題</button>
+                <button class="random-count-btn" type="button" data-random-all-type="choice" data-random-count="250">隨機抽 250 題</button>
+                <button class="random-count-btn" type="button" data-random-all-type="choice" data-random-count="300">隨機抽 300 題</button>
+                <button class="random-count-btn" type="button" data-random-all-type="choice" data-random-count="350">隨機抽 350 題</button>
+                <button class="random-count-btn" type="button" data-random-all-type="choice" data-random-count="400">隨機抽 400 題</button>
               </div>
+              <div class="random-draw-stats" id="randomChoiceStats"></div>
+              <div class="random-repeat-note warning">三次都抽 50～300 題時可完整做到三抽不重複；選擇題共 913 題，若三次都抽 350 或 400 題，總需求超過 913 題，系統會先用未出現題目，再補入必要重複題。</div>
             </div>
 
             <div class="random-pick-group">
@@ -2344,7 +2426,13 @@
                 <button class="random-count-btn tf" type="button" data-random-all-type="true_false" data-random-count="50">隨機抽 50 題</button>
                 <button class="random-count-btn tf" type="button" data-random-all-type="true_false" data-random-count="100">隨機抽 100 題</button>
                 <button class="random-count-btn tf" type="button" data-random-all-type="true_false" data-random-count="150">隨機抽 150 題</button>
+                <button class="random-count-btn tf" type="button" data-random-all-type="true_false" data-random-count="200">隨機抽 200 題</button>
+                <button class="random-count-btn tf" type="button" data-random-all-type="true_false" data-random-count="250">隨機抽 250 題</button>
+                <button class="random-count-btn tf" type="button" data-random-all-type="true_false" data-random-count="300">隨機抽 300 題</button>
+                <button class="random-count-btn tf" type="button" data-random-all-type="true_false" data-random-count="400">隨機抽 400 題</button>
               </div>
+              <div class="random-draw-stats" id="randomTfStats"></div>
+              <div class="random-repeat-note">是非題共 2,686 題；目前 25～400 題的選項皆可完整做到同一個三抽循環內不重複。</div>
             </div>
           </div>
         </div>
@@ -3041,6 +3129,142 @@ function eraseNearestLawStroke(pt){
   if(best>=0&&bestD<=.035){lawStrokes.splice(best,1);drawLawAnnotations();saveLawStrokes();toast("已單獨塗銷 1 筆註記")}else{toast("請點在要刪除的筆畫上")}
 }
 
+
+const RANDOM_DRAW_STATE_KEY="procurementQuizRandomDrawStateV1";
+
+function blankRandomTypeState(){
+  return {startedCount:0,completedCount:0,cycleDraws:[]}
+}
+
+function normalizeRandomDrawState(value){
+  const raw=value&&typeof value==="object"?value:{};
+  const out={};
+  for(const type of ["choice","true_false"]){
+    const src=raw[type]&&typeof raw[type]==="object"?raw[type]:{};
+    out[type]={
+      startedCount:Number(src.startedCount)||0,
+      completedCount:Number(src.completedCount)||0,
+      cycleDraws:Array.isArray(src.cycleDraws)
+        ?src.cycleDraws.slice(-3).map(draw=>({
+            ids:Array.isArray(draw?.ids)?draw.ids.filter(id=>QMAP.has(id)):[],
+            drawNo:Number(draw?.drawNo)||0,
+            count:Number(draw?.count)||0
+          }))
+        :[]
+    }
+  }
+  return out
+}
+
+let randomDrawState=normalizeRandomDrawState(loadJSON(RANDOM_DRAW_STATE_KEY,{}));
+
+function saveRandomDrawState(){
+  localStorage.setItem(RANDOM_DRAW_STATE_KEY,JSON.stringify(randomDrawState))
+}
+
+function randomTypeState(type){
+  if(!randomDrawState[type])randomDrawState[type]=blankRandomTypeState();
+  return randomDrawState[type]
+}
+
+function randomCycleUsedIds(typeState){
+  const used=new Set();
+  for(const draw of typeState.cycleDraws||[]){
+    for(const id of draw.ids||[])used.add(id)
+  }
+  return used
+}
+
+function prepareRandomAllDraw(type,requested){
+  const state=randomTypeState(type);
+  const pool=QUESTIONS.filter(q=>q.type===type).map(q=>q.id);
+  const actual=Math.min(Number(requested)||0,pool.length);
+
+  if(!actual||!pool.length)return null;
+
+  /* 每三次為一循環；第4次開始新的三抽循環 */
+  if((state.cycleDraws||[]).length>=3){
+    state.cycleDraws=[]
+  }
+
+  const cycleNo=state.cycleDraws.length+1;
+  const used=randomCycleUsedIds(state);
+  const fresh=shuffle(pool.filter(id=>!used.has(id)));
+  const ids=fresh.slice(0,Math.min(actual,fresh.length));
+  const needed=actual-ids.length;
+
+  let repeatCount=0;
+  if(needed>0){
+    const selected=new Set(ids);
+    const fallback=shuffle(pool.filter(id=>!selected.has(id)));
+    ids.push(...fallback.slice(0,needed));
+    repeatCount=needed
+  }
+
+  state.startedCount=(state.startedCount||0)+1;
+  const drawNo=state.startedCount;
+  state.cycleDraws.push({ids:[...ids],drawNo,count:actual});
+  saveRandomDrawState();
+
+  return {
+    ids,
+    actual,
+    drawNo,
+    cycleNo,
+    repeatCount,
+    poolSize:pool.length,
+    strictNoRepeat:repeatCount===0
+  }
+}
+
+function randomDrawStatusText(type){
+  const state=randomTypeState(type);
+  const cycleCount=(state.cycleDraws||[]).length;
+  const cycleText=cycleCount>=3
+    ?"本輪已抽 3／3，下次會開啟新一輪"
+    :`本輪已抽 ${cycleCount}／3`;
+  return `已抽題 ${state.startedCount||0} 次・已完成 ${state.completedCount||0} 次・${cycleText}`
+}
+
+function recordRandomCompletionIfNeeded(){
+  if(!session||session.scope!=="random_all")return null;
+  if(session.index<session.ids.length-1)return null;
+
+  const state=randomTypeState(session.type);
+
+  if(!session.randomCompletionRecorded){
+    state.completedCount=(state.completedCount||0)+1;
+    session.randomCompletionRecorded=true;
+    session.randomCompletedCount=state.completedCount;
+    session.randomCompletedAtMs=Date.now();
+    saveRandomDrawState();
+    saveSession();
+    renderRandomAllCounts()
+  }
+
+  return {
+    type:session.type,
+    drawNo:Number(session.randomDrawNo)||0,
+    completedCount:Number(session.randomCompletedCount)||state.completedCount||0,
+    cycleNo:Number(session.randomCycleNo)||1,
+    repeatCount:Number(session.randomRepeatCount)||0,
+    count:Number(session.randomCount)||session.ids.length
+  }
+}
+
+function renderRandomCompletionBanner(info){
+  if(!info)return "";
+  const typeLabel=info.type==="choice"?"選擇題":"是非題";
+  const repeatHtml=info.repeatCount>0
+    ?`<div class="random-completion-warning">本輪因題庫剩餘未出現題數不足，本次有 ${info.repeatCount} 題為必要重複；其餘題目仍優先使用本輪未出現題目。</div>`
+    :`<div class="random-completion-meta">本次與同一個三抽循環中前面的抽題沒有重複。</div>`;
+
+  return `<div class="random-completion-banner">
+    <div class="random-completion-title">✓ 第 ${info.drawNo} 次隨機抽題已完成</div>
+    <div class="random-completion-meta">${typeLabel} ${info.count} 題・三抽循環第 ${info.cycleNo}／3 次・累計完成 ${info.completedCount} 次</div>
+    ${repeatHtml}
+  </div>`
+}
 
 let progress=loadJSON(STORAGE_KEY,{});
 let session=loadJSON(SESSION_KEY,null);
@@ -4028,36 +4252,45 @@ function renderRandomAllCounts(){
   const tfCount=QUESTIONS.filter(q=>q.type==="true_false").length;
   if($("randomChoiceAvailable"))$("randomChoiceAvailable").textContent=`全題庫共 ${choiceCount.toLocaleString()} 題`;
   if($("randomTfAvailable"))$("randomTfAvailable").textContent=`全題庫共 ${tfCount.toLocaleString()} 題`;
+  if($("randomChoiceStats"))$("randomChoiceStats").textContent=randomDrawStatusText("choice");
+  if($("randomTfStats"))$("randomTfStats").textContent=randomDrawStatusText("true_false");
 }
 
 function startRandomAllPractice(type,count){
   const typeLabel=type==="choice"?"選擇題":"是非題";
   const requested=Number(count)||0;
-  const pool=QUESTIONS.filter(q=>q.type===type).map(q=>q.id);
+  const prepared=prepareRandomAllDraw(type,requested);
 
-  if(!requested||!pool.length){
+  if(!prepared){
     toast("此題型目前沒有可抽取題目");
     return
   }
-
-  const actual=Math.min(requested,pool.length);
-  const ids=shuffle([...pool]).slice(0,actual);
 
   session={
     category:"全部題庫隨機抽題",
     type,
     scope:"random_all",
     order:"random",
-    randomCount:actual,
-    ids,
+    randomCount:prepared.actual,
+    randomDrawNo:prepared.drawNo,
+    randomCycleNo:prepared.cycleNo,
+    randomRepeatCount:prepared.repeatCount,
+    randomCompletionRecorded:false,
+    ids:prepared.ids,
     index:0
   };
 
   saveSession();
   selectedAnswer=null;
   answered=false;
+  renderRandomAllCounts();
   showView("practiceView");
-  toast(`已從全部題庫隨機抽取 ${actual} 題${typeLabel}`)
+
+  if(prepared.repeatCount>0){
+    toast(`第 ${prepared.drawNo} 次抽題：已優先避開本輪舊題，仍有 ${prepared.repeatCount} 題為必要重複`)
+  }else{
+    toast(`第 ${prepared.drawNo} 次抽題・本輪第 ${prepared.cycleNo}/3 抽：${prepared.actual} 題${typeLabel}無重複`)
+  }
 }
 
 function bindRandomAllPractice(){
@@ -4238,7 +4471,7 @@ function renderQuestion(){
   const [status,cls]=statusInfo(q);
   $("questionStatus").textContent=status;$("questionStatus").className=`status ${cls}`;
   const randomMode=session?.scope==="random_all"
-    ?`<span class="random-mode-badge">全題庫隨機抽 ${session.randomCount||session.ids.length} 題${labelType(session.type)}</span><br>`
+    ?`<span class="random-mode-badge">全題庫隨機抽 ${session.randomCount||session.ids.length} 題${labelType(session.type)}</span><span class="random-draw-seq-badge">第 ${session.randomDrawNo||1} 次抽題・本輪第 ${session.randomCycleNo||1}/3 抽</span><br>`
     :"";
   $("quizMeta").innerHTML=`${randomMode}第 <strong>${session.index+1}</strong>／${session.ids.length} 題<br>${esc(q.category)}・${labelType(q.type)}・原題號 ${q.number}`;
   $("quizProgress").style.width=`${(session.index+1)/session.ids.length*100}%`;
@@ -4285,6 +4518,7 @@ function submitAnswer(){
   };
   saveProgress();answered=true;
   renderQuestionPracticeCount(q);
+  const randomCompletion=recordRandomCompletionIfNeeded();
   const [updatedStatus,updatedCls]=statusInfo(q);
   $("questionStatus").textContent=updatedStatus;
   $("questionStatus").className=`status ${updatedCls}`;
@@ -4352,6 +4586,7 @@ function submitAnswer(){
         </div>
         <span class="answer-badge">✦ 政府採購精選詳解</span>
       </div>
+      ${renderRandomCompletionBanner(randomCompletion)}
       <div class="analysis-wrap">
         <div class="analysis-heading">逐選項分析</div>
         <div class="analysis-tools">
@@ -4602,7 +4837,10 @@ function skipQuestion(){
 
   const isLast=session.index>=session.ids.length-1;
   if(isLast){
-    toast("本題已略過，已到最後一題");
+    const randomCompletion=recordRandomCompletionIfNeeded();
+    toast(randomCompletion
+      ?`本題已略過，第 ${randomCompletion.drawNo} 次隨機抽題完成`
+      :"本題已略過，已到最後一題");
     setTimeout(()=>showView("recordView"),450);
     return
   }
@@ -4617,7 +4855,10 @@ function skipQuestion(){
 function nextQuestion(){
   if(!session)return;
   if(session.index>=session.ids.length-1){
-    toast("本主題已練習完成");
+    const randomCompletion=recordRandomCompletionIfNeeded();
+    toast(randomCompletion
+      ?`第 ${randomCompletion.drawNo} 次隨機抽題已完成`
+      :"本主題已練習完成");
     showView("recordView");return
   }
   session.index++;saveSession();renderQuestion();window.scrollTo({top:0,behavior:"smooth"})
@@ -4752,10 +4993,10 @@ init();
 setupLawReader();
 applyQuestionLawDeepLink();
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
-  navigator.serviceWorker.register("./sw.js?v=23.2.9.4").catch(()=>{})
+  navigator.serviceWorker.register("./sw.js?v=23.2.9.5").catch(()=>{})
 }
 </script>
 <script src="./firebase-config.js"></script>
-<script type="module" src="./firebase-sync.js?v=23.2.9.4"></script>
+<script type="module" src="./firebase-sync.js?v=23.2.9.5"></script>
 </body>
 </html>
