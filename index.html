@@ -2217,7 +2217,7 @@
     }
 
 
-    /* V23.2.9.4 答對／答錯次數提示（V23.2.9.6沿用） */
+    /* V23.2.9.4 答對／答錯次數提示（V23.2.9.7沿用） */
     .question-practice-count.correct-count{
       border-color:#b7d9c5;
       background:#edf8f2;
@@ -2236,7 +2236,7 @@
       }
     }
 
-    /* V23.2.9.6 隨機抽題：抽題次數＋三抽不重複 */
+    /* V23.2.9.7 隨機抽題：抽題次數＋三抽不重複 */
     .random-draw-stats{
       margin-top:9px;
       padding:8px 10px;
@@ -2312,6 +2312,24 @@
       }
     }
 
+    /* V23.2.9.7 取消曾略過註記 */
+    .clear-skip-btn{
+      width:100%;
+      min-height:42px;
+      padding:10px 14px;
+      border:1px solid #d8c9bc;
+      border-radius:12px;
+      background:#fffaf5;
+      color:#7a5f4d;
+      font-size:11px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .clear-skip-btn:hover{
+      background:#fff3e9;
+      border-color:#c8ad98;
+    }
+    .clear-skip-btn.hidden{display:none !important;}
   </style>
 </head>
 <body>
@@ -2325,7 +2343,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">V23.2.9.6 AI筆記＋隨機三抽不重複版</div>
+          <div class="brand-sub">V23.2.9.7 AI筆記＋隨機三抽不重複版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -2471,6 +2489,10 @@
           <button class="primary-btn" id="submitBtn">送出答案</button>
           <div style="height:9px"></div>
           <button class="skip-btn" id="skipBtn">略過本題，直接下一題 →</button>
+          <div style="height:9px"></div>
+          <button class="clear-skip-btn hidden" id="clearSkipBtn" type="button" onclick="clearSkipMarker()">
+            取消曾略過註記
+          </button>
           <div style="height:9px"></div>
           <button class="secondary-btn hidden" id="nextBtn">下一題 →</button>
         </div>
@@ -4486,6 +4508,68 @@ function renderQuestionPracticeCount(q){
   `
 }
 
+function updateClearSkipButton(q){
+  const btn=$("clearSkipBtn");
+  if(!btn)return;
+  const p=q?questionProgress(q):null;
+  const skipped=Number(p?.skipped||0);
+  btn.classList.toggle("hidden",skipped<=0);
+  btn.textContent=skipped>1
+    ?`取消曾略過註記（${skipped} 次）`
+    :"取消曾略過註記";
+}
+
+function refreshCurrentJumpOption(q){
+  const select=$("jumpSelect");
+  if(!select||!session||!q)return;
+  const option=select.options?.[session.index];
+  if(!option)return;
+  const marker=numberOptionStatus(q);
+  const prefix=marker?`${marker} `:"";
+  option.textContent=`${prefix}第 ${session.index+1} 題｜${labelType(q.type)}原題號 ${q.number}`;
+}
+
+function clearSkipMarker(){
+  const q=currentQuestion();
+  if(!q)return;
+  const p=questionProgress(q);
+  const skipped=Number(p.skipped||0);
+
+  if(skipped<=0){
+    toast("本題沒有曾略過註記");
+    updateClearSkipButton(q);
+    return;
+  }
+
+  if(!confirm(
+    `確定取消本題的曾略過註記嗎？\n\n`+
+    `將清除略過 ${skipped} 次的紀錄，但不會刪除答對、答錯、收藏或筆記。`
+  ))return;
+
+  let lastAction=p.lastAction;
+  if(lastAction==="skipped"){
+    lastAction=Number(p.attempts||0)>0?"answered":null;
+  }
+
+  progress[q.id]={
+    ...p,
+    skipped:0,
+    lastAction,
+    updatedAtMs:Date.now()
+  };
+
+  saveProgress();
+
+  const [status,cls]=statusInfo(q);
+  $("questionStatus").textContent=status;
+  $("questionStatus").className=`status ${cls}`;
+  updateClearSkipButton(q);
+  refreshCurrentJumpOption(q);
+  renderQuestionPracticeCount(q);
+
+  toast("已取消本題曾略過註記");
+}
+
 function renderQuestion(){
   const q=currentQuestion();
   if(!q){
@@ -4524,6 +4608,7 @@ function renderQuestion(){
   $("practiceView").classList.remove("has-answer");
   $("submitBtn").classList.remove("hidden");
   $("skipBtn").classList.remove("hidden");
+  updateClearSkipButton(q);
   $("nextBtn").classList.add("hidden");
   $("prevBtn").disabled=session.index===0;
   $("favoriteBtn").textContent=questionProgress(q).favorite?"★ 已收藏":"☆ 收藏"
@@ -4543,6 +4628,7 @@ function submitAnswer(){
   };
   saveProgress();answered=true;
   renderQuestionPracticeCount(q);
+  updateClearSkipButton(q);
   const randomCompletion=recordRandomCompletionIfNeeded();
   const [updatedStatus,updatedCls]=statusInfo(q);
   $("questionStatus").textContent=updatedStatus;
@@ -5018,10 +5104,10 @@ init();
 setupLawReader();
 applyQuestionLawDeepLink();
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
-  navigator.serviceWorker.register("./sw.js?v=23.2.9.6").catch(()=>{})
+  navigator.serviceWorker.register("./sw.js?v=23.2.9.7").catch(()=>{})
 }
 </script>
 <script src="./firebase-config.js"></script>
-<script type="module" src="./firebase-sync.js?v=23.2.9.6"></script>
+<script type="module" src="./firebase-sync.js?v=23.2.9.7"></script>
 </body>
 </html>
