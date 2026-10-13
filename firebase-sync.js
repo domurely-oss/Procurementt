@@ -47,10 +47,13 @@ let progressTimer = null;
 let sessionTimer = null;
 let functions = null;
 let recordUserAccessCallable = null;
+let getMyRoleCallable = null;
+let getAdminDashboardCallable = null;
+let setUserRoleCallable = null;
 let currentRole = "user";
 let usageHeartbeatTimer = null;
 let adminDashboardState = { users: [], logs: [], activeTab: "users" };
-const APP_VERSION = "firebase-v23-2-9-admin-console";
+const APP_VERSION = "firebase-v23-2-9-6-text-cleanup";
 
 const GEMINI_NOTE_STORAGE_KEY = "procurement_quiz_gemini_notes_v1";
 const OPTION_ANALYSIS_EDIT_STORAGE_KEY = "procurement_quiz_option_analysis_edits_v1";
@@ -155,6 +158,7 @@ function updateAuthUi(user) {
     setText("[data-auth-button-label]", "已登入");
     setText("[data-auth-user-name]", formatUser(user));
     setText("[data-auth-user-email]", user.email || "Google 帳號");
+    setText("[data-auth-uid]", `UID：${user.uid}`);
     setHidden("[data-auth-guest]", true);
     setHidden("[data-auth-user]", false);
     setSyncState("準備同步雲端學習紀錄…", "working");
@@ -162,6 +166,7 @@ function updateAuthUi(user) {
     setText("[data-auth-button-label]", "登入同步");
     setText("[data-auth-user-name]", "尚未登入");
     setText("[data-auth-user-email]", "");
+    setText("[data-auth-uid]", "");
     setHidden("[data-auth-guest]", false);
     setHidden("[data-auth-user]", true);
     setSyncState(
@@ -1116,6 +1121,14 @@ function escapeAdmin(value) {
     .replaceAll("'", "&#39;");
 }
 
+function setAdminRoleHelp(message, kind = "") {
+  all("[data-admin-role-help]").forEach((node) => {
+    node.textContent = message;
+    node.classList.toggle("ok", kind === "ok");
+    node.classList.toggle("error", kind === "error");
+  });
+}
+
 function setRoleUi(role) {
   currentRole = role === "admin" ? "admin" : "user";
   setText("[data-auth-role]", currentRole === "admin" ? "管理者" : "一般使用者");
@@ -1123,24 +1136,80 @@ function setRoleUi(role) {
     node.classList.toggle("admin", currentRole === "admin");
   });
   setHidden("[data-admin-only]", currentRole !== "admin");
+  if (currentRole === "admin") {
+    setAdminRoleHelp("已確認管理者權限。頁面右上角會顯示「🛡 管理」。", "ok");
+  } else if (currentUser) {
+    setAdminRoleHelp(`目前辨識為一般使用者。若您應為管理者，請確認 Firestore 已建立 adminUsers/${currentUser.uid}，且 enabled 為 Boolean true。`);
+  } else {
+    setAdminRoleHelp("登入後會自動檢查管理者權限。");
+  }
 }
 
-async function refreshUserRole(user) {
-  if (!user || !db) {
+async function refreshUserRole(user, showFeedback = false) {
+  if (!user) {
     setRoleUi("user");
     return "user";
   }
 
-  try {
-    const snap = await getDoc(doc(db, "adminUsers", user.uid));
-    const isAdmin = snap.exists() && snap.data()?.enabled !== false;
-    setRoleUi(isAdmin ? "admin" : "user");
-  } catch (error) {
-    console.warn("Unable to read admin role:", error);
-    setRoleUi("user");
+  // 優先透過 Cloud Function 判斷角色。它使用 Admin SDK，不受瀏覽器 Firestore rules 影響。
+  if (getMyRoleCallable) {
+    try {
+      const result = await getMyRoleCallable({});
+      const data = result?.data || {};
+      setRoleUi(data.role === "admin" ? "admin" : "user");
+      if (showFeedback) {
+        showAuthMessage(
+          currentRole === "admin"
+            ? "管理者權限確認成功，右上角已顯示「🛡 管理」。"
+            : `目前仍是一般使用者。請確認 adminUsers/${user.uid} 的 enabled 為 Boolean true。`,
+          currentRole !== "admin"
+        );
+      }
+      return currentRole;
+    } catch (error) {
+      console.warn("Cloud Function role check failed, trying Firestore fallback:", error);
+    }
   }
 
+  // 後備方案：直接讀取自己的 adminUsers 文件。
+  if (db) {
+    try {
+      const snap = await getDoc(doc(db, "adminUsers", user.uid));
+      const isAdmin = snap.exists() && snap.data()?.enabled === true;
+      setRoleUi(isAdmin ? "admin" : "user");
+      if (showFeedback) {
+        showAuthMessage(
+          isAdmin
+            ? "管理者權限確認成功。"
+            : `找不到有效的管理者設定。請確認 adminUsers/${user.uid} 且 enabled=true（Boolean）。`,
+          !isAdmin
+        );
+      }
+      return currentRole;
+    } catch (error) {
+      console.warn("Unable to read admin role:", error);
+      setRoleUi("user");
+      setAdminRoleHelp(
+        `管理權限檢查失敗：${friendlyFirebaseError(error)}。請部署 V23.2.9.1 的 Cloud Functions 與 firestore.rules。`,
+        "error"
+      );
+      if (showFeedback) showAuthMessage("管理權限檢查失敗，請重新部署管理功能後再試。", true);
+      return currentRole;
+    }
+  }
+
+  setRoleUi("user");
   return currentRole;
+}
+
+async function checkAdminAccess() {
+  const user = currentUser || auth?.currentUser || null;
+  if (!user) {
+    showAuthMessage("請先登入，再檢查管理者權限。", true);
+    return;
+  }
+  showAuthMessage("正在重新檢查管理者權限…");
+  await refreshUserRole(user, true);
 }
 
 function firestoreDate(value) {
@@ -1225,7 +1294,14 @@ function stopUsageHeartbeat() {
 
 function openAdminModal() {
   if (currentRole !== "admin") {
-    bridge?.toast?.("此功能僅限管理者");
+    openAuthModal();
+    setAdminRoleHelp(
+      currentUser
+        ? `目前未辨識為管理者。請確認 adminUsers/${currentUser.uid} 的 enabled 為 Boolean true，並按「重新檢查管理者權限」。`
+        : "請先登入管理者帳號。",
+      "error"
+    );
+    bridge?.toast?.("尚未取得管理者權限");
     return;
   }
   document.getElementById("adminModal")?.classList.remove("hidden");
@@ -1325,7 +1401,62 @@ function renderAdminLogs() {
   </tr>`).join("");
 }
 
+async function applyAdminDashboardData(users = [], logs = []) {
+  adminDashboardState.users = users.map((item) => ({
+    ...item,
+    device: item.device || deviceLabel(item.userAgent || "")
+  }));
+  adminDashboardState.logs = logs;
+
+  const now = Date.now();
+  const active24 = users.filter((u) => {
+    const t = firestoreDate(u.lastSeenAt)?.getTime() || 0;
+    return t && now - t <= 24 * 60 * 60 * 1000;
+  }).length;
+
+  const setValue = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = String(value);
+  };
+  setValue("adminUserCount", users.length);
+  setValue("adminAdminCount", users.filter((u) => u.isAdmin).length);
+  setValue("adminActive24Count", active24);
+  setValue("adminLogCount", logs.length);
+  renderAdminUsers();
+  renderAdminLogs();
+}
+
 async function loadAdminDashboard() {
+  if (currentRole !== "admin" || !currentUser) {
+    setAdminStatus("沒有管理者權限。", true);
+    return;
+  }
+
+  setAdminStatus("正在讀取使用者與使用紀錄…");
+  const refresh = document.getElementById("adminRefreshBtn");
+  if (refresh) refresh.disabled = true;
+
+  try {
+    if (getAdminDashboardCallable) {
+      const result = await getAdminDashboardCallable({ limit: 300 });
+      const data = result?.data || {};
+      const users = Array.isArray(data.users) ? data.users : [];
+      const logs = Array.isArray(data.logs) ? data.logs : [];
+      await applyAdminDashboardData(users, logs);
+      setAdminStatus(`已載入 ${users.length} 個帳號、最近 ${logs.length} 筆使用紀錄。`);
+      return;
+    }
+  } catch (error) {
+    console.warn("Admin callable failed, trying Firestore fallback:", error);
+  } finally {
+    if (refresh) refresh.disabled = false;
+  }
+
+  // Cloud Function 尚未部署時，保留 Firestore 直接讀取的相容方案。
+  return loadAdminDashboardFromFirestore();
+}
+
+async function loadAdminDashboardFromFirestore() {
   if (currentRole !== "admin" || !db || !currentUser) {
     setAdminStatus("沒有管理者權限。", true);
     return;
@@ -1406,17 +1537,26 @@ async function loadAdminDashboard() {
 }
 
 async function changeUserRole(uid, role) {
-  if (currentRole !== "admin" || !currentUser || !db) return;
+  if (currentRole !== "admin" || !currentUser) return;
   if (!uid || uid === currentUser.uid) {
     bridge?.toast?.("目前登入的管理者不可自行降權");
     return;
   }
 
-  const target = adminDashboardState.users.find((u) => u.uid === uid);
-  const ref = doc(db, "adminUsers", uid);
-
   try {
     setAdminStatus("正在更新帳號角色…");
+
+    if (setUserRoleCallable) {
+      await setUserRoleCallable({ uid, role });
+      bridge?.toast?.(role === "admin" ? "已設為管理者" : "已改為一般使用者");
+      await loadAdminDashboard();
+      return;
+    }
+
+    // 相容舊部署：直接透過 Firestore 更新角色。
+    if (!db) throw new Error("Firestore 尚未初始化");
+    const target = adminDashboardState.users.find((u) => u.uid === uid);
+    const ref = doc(db, "adminUsers", uid);
     if (role === "admin") {
       await setDoc(ref, {
         enabled: true,
@@ -1460,6 +1600,10 @@ function bindUi() {
 
   all("[data-open-admin]").forEach((button) => {
     button.addEventListener("click", openAdminModal);
+  });
+
+  all("[data-check-admin]").forEach((button) => {
+    button.addEventListener("click", checkAdminAccess);
   });
 
   document.getElementById("closeAdminBtn")?.addEventListener("click", closeAdminModal);
@@ -1613,6 +1757,9 @@ if (!configured()) {
     db = getFirestore(app);
     functions = getFunctions(app, "asia-east1");
     recordUserAccessCallable = httpsCallable(functions, "recordUserAccess", { timeout: 20000 });
+    getMyRoleCallable = httpsCallable(functions, "getMyRole", { timeout: 15000 });
+    getAdminDashboardCallable = httpsCallable(functions, "getAdminDashboard", { timeout: 30000 });
+    setUserRoleCallable = httpsCallable(functions, "setUserRole", { timeout: 20000 });
 
     await setPersistence(auth, browserLocalPersistence);
     await getRedirectResult(auth).catch(() => null);
