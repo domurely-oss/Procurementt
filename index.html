@@ -12,20 +12,49 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <script>
-    // V23.2.9.8：自動跟隨 iPad / iPhone / macOS 系統深色模式
+    // V23.2.9.10：支援「跟隨系統／一般模式／深色模式」手動切換
     (()=>{
-      const media=window.matchMedia?.('(prefers-color-scheme: dark)');
-      const apply=()=>{
-        const dark=!!media?.matches;
-        document.documentElement.dataset.systemTheme=dark?'dark':'light';
-        const meta=document.querySelector('meta[name="theme-color"]');
-        if(meta)meta.setAttribute('content',dark?'#141210':'#744321');
+      const KEY="procurement_theme_mode_v1";
+      const media=window.matchMedia?.("(prefers-color-scheme: dark)");
+      const normalize=mode=>["auto","light","dark"].includes(mode)?mode:"auto";
+      const apply=(mode,persist=false)=>{
+        mode=normalize(mode);
+        if(persist){try{localStorage.setItem(KEY,mode)}catch{}}
+        const effective=mode==="auto"?(media?.matches?"dark":"light"):mode;
+
+        document.documentElement.dataset.themeMode=mode;
+        document.documentElement.dataset.effectiveTheme=effective;
+        document.documentElement.dataset.systemTheme=media?.matches?"dark":"light";
+        document.documentElement.style.colorScheme=effective;
+
+        const colorMeta=document.querySelector('meta[name="color-scheme"]');
+        if(colorMeta)colorMeta.setAttribute("content",effective);
+
+        const themeMeta=document.querySelector('meta[name="theme-color"]');
+        if(themeMeta)themeMeta.setAttribute("content",effective==="dark"?"#141210":"#744321");
+
         const status=document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-        if(status)status.setAttribute('content',dark?'black-translucent':'default');
+        if(status)status.setAttribute("content",effective==="dark"?"black-translucent":"default");
+
+        window.dispatchEvent(new CustomEvent("procurement-theme-change",{detail:{mode,effective}}));
+        return {mode,effective}
       };
-      apply();
-      if(media?.addEventListener)media.addEventListener('change',apply);
-      else if(media?.addListener)media.addListener(apply);
+      const read=()=>{
+        try{return normalize(localStorage.getItem(KEY)||"auto")}
+        catch{return "auto"}
+      };
+
+      window.__applyProcurementTheme=apply;
+      window.__getProcurementThemeMode=read;
+      apply(read(),false);
+
+      const onSystemChange=()=>{
+        if(read()==="auto")apply("auto",false);
+        else document.documentElement.dataset.systemTheme=media?.matches?"dark":"light";
+      };
+
+      if(media?.addEventListener)media.addEventListener("change",onSystemChange);
+      else if(media?.addListener)media.addListener(onSystemChange);
     })();
   </script>
 
@@ -2356,8 +2385,8 @@
        ========================================================= */
     html{color-scheme:light dark}
 
-    @media (prefers-color-scheme: dark){
-      :root{
+    
+      html[data-effective-theme="dark"]{
         --bg:#141210;
         --surface:#1d1a18;
         --surface2:#231f1c;
@@ -2377,8 +2406,8 @@
         --shadow:0 16px 38px rgba(0,0,0,.34);
       }
 
-      html{color-scheme:dark}
-      body{
+      html[data-effective-theme="dark"]{color-scheme:dark}
+      html[data-effective-theme="dark"] body{
         color:var(--ink);
         background-color:var(--bg);
         background-image:
@@ -2387,199 +2416,193 @@
       }
 
       /* 頂端與主標題 */
-      .topbar{
+      html[data-effective-theme="dark"] .topbar{
         background:linear-gradient(180deg,#2a1d17,#1c1512);
         border-bottom-color:#46352c;
         box-shadow:0 8px 24px rgba(0,0,0,.34);
       }
-      .brand-mark{background:#2a211c;color:#efb37b;border-color:#5b4638}
-      .brand-sub{color:#cabdb5}
-      .icon-btn{background:#322620;border-color:#5f493c;color:#f7eee8}
-      .hero{
+      html[data-effective-theme="dark"] .brand-mark{background:#2a211c;color:#efb37b;border-color:#5b4638}
+      html[data-effective-theme="dark"] .brand-sub{color:#cabdb5}
+      html[data-effective-theme="dark"] .icon-btn{background:#322620;border-color:#5f493c;color:#f7eee8}
+      html[data-effective-theme="dark"] .hero{
         background:linear-gradient(138deg,#4a3025 0%,#34231c 58%,#1f1916 100%);
         box-shadow:0 18px 42px rgba(0,0,0,.34)
       }
-      .hero small,.chip{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14)}
-      .practice-title{color:#f4eee8}
-      .practice-title span:after{background:#715033}
-      .section-title,.analysis-heading{color:#b9e2e3}
+      html[data-effective-theme="dark"] .hero small,html[data-effective-theme="dark"] .chip{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14)}
+      html[data-effective-theme="dark"] .practice-title{color:#f4eee8}
+      html[data-effective-theme="dark"] .practice-title span:after{background:#715033}
+      html[data-effective-theme="dark"] .section-title,html[data-effective-theme="dark"] .analysis-heading{color:#b9e2e3}
 
       /* 一般卡片與表單 */
-      .card,.category-row,.question-card,.search-item,.metric,
-      .summary-card,.analysis-list,.answer-panel,.random-pick-group,
-      .law-reader-card,.law-entry-card,.sync-card,.auth-user-card{
+      html[data-effective-theme="dark"] .card,html[data-effective-theme="dark"] .category-row,html[data-effective-theme="dark"] .question-card,html[data-effective-theme="dark"] .search-item,html[data-effective-theme="dark"] .metric,html[data-effective-theme="dark"] .summary-card,html[data-effective-theme="dark"] .analysis-list,html[data-effective-theme="dark"] .answer-panel,html[data-effective-theme="dark"] .random-pick-group,html[data-effective-theme="dark"] .law-reader-card,html[data-effective-theme="dark"] .law-entry-card,html[data-effective-theme="dark"] .sync-card,html[data-effective-theme="dark"] .auth-user-card{
         background:#1d1a18 !important;
         border-color:#453c36 !important;
         box-shadow:0 10px 28px rgba(0,0,0,.24)
       }
-      label.field,.quiz-meta,.category-count,.progress-meta,.metric-label,
-      .record-meta,.search-item-meta,.random-all-intro,.random-pick-available{
+      html[data-effective-theme="dark"] label.field,html[data-effective-theme="dark"] .quiz-meta,html[data-effective-theme="dark"] .category-count,html[data-effective-theme="dark"] .progress-meta,html[data-effective-theme="dark"] .metric-label,html[data-effective-theme="dark"] .record-meta,html[data-effective-theme="dark"] .search-item-meta,html[data-effective-theme="dark"] .random-all-intro,html[data-effective-theme="dark"] .random-pick-available{
         color:#b6aba3 !important
       }
-      select,input[type="search"],input[type="email"],input[type="password"],
-      input[type="text"],input[type="number"],textarea,
-      .admin-search,.auth-form input{
+      html[data-effective-theme="dark"] select,html[data-effective-theme="dark"] input[type="search"],html[data-effective-theme="dark"] input[type="email"],html[data-effective-theme="dark"] input[type="password"],html[data-effective-theme="dark"] input[type="text"],html[data-effective-theme="dark"] input[type="number"],html[data-effective-theme="dark"] textarea,html[data-effective-theme="dark"] .admin-search,html[data-effective-theme="dark"] .auth-form input{
         background:#211d1a !important;
         color:#f3eee9 !important;
         border-color:#51453e !important;
       }
-      select:focus,input:focus,textarea:focus{
+      html[data-effective-theme="dark"] select:focus,html[data-effective-theme="dark"] input:focus,html[data-effective-theme="dark"] textarea:focus{
         border-color:#c58956 !important;
         box-shadow:0 0 0 3px rgba(224,160,95,.13) !important
       }
-      ::placeholder{color:#8f847d;opacity:1}
+      html[data-effective-theme="dark"] ::placeholder{color:#8f847d;opacity:1}
 
       /* 題型、按鈕 */
-      .seg-btn,.secondary-btn,.auth-close-btn,.admin-tab-btn,.admin-action-btn,
-      .analysis-sync-badge,.summary-lock-badge{
+      html[data-effective-theme="dark"] .seg-btn,html[data-effective-theme="dark"] .secondary-btn,html[data-effective-theme="dark"] .auth-close-btn,html[data-effective-theme="dark"] .admin-tab-btn,html[data-effective-theme="dark"] .admin-action-btn,html[data-effective-theme="dark"] .analysis-sync-badge,html[data-effective-theme="dark"] .summary-lock-badge{
         background:#211d1a !important;
         color:#d8cec7 !important;
         border-color:#51453e !important
       }
-      .seg-btn.active,.tab-btn.active,.nav-btn.active{
+      html[data-effective-theme="dark"] .seg-btn.active,html[data-effective-theme="dark"] .tab-btn.active,html[data-effective-theme="dark"] .nav-btn.active{
         background:#3b2b20 !important;
         color:#f2c18f !important;
         border-color:#75543c !important
       }
-      .primary-btn{background:linear-gradient(135deg,#8d5b37,#5c3a28)}
-      .skip-btn{background:#3b321f;color:#f0c97d;border-color:#66552d}
-      .clear-skip-btn{background:#28211c;color:#d9b99f;border-color:#5d4c40}
-      .danger-btn{background:#3b2528;color:#f2a1aa;border-color:#704047}
+      html[data-effective-theme="dark"] .primary-btn{background:linear-gradient(135deg,#8d5b37,#5c3a28)}
+      html[data-effective-theme="dark"] .skip-btn{background:#3b321f;color:#f0c97d;border-color:#66552d}
+      html[data-effective-theme="dark"] .clear-skip-btn{background:#28211c;color:#d9b99f;border-color:#5d4c40}
+      html[data-effective-theme="dark"] .danger-btn{background:#3b2528;color:#f2a1aa;border-color:#704047}
 
       /* 首頁進度與隨機抽題 */
-      .category-name,.record-title,.search-item-title,.random-pick-title{color:#eee6e0 !important}
-      .progress-track{background:#342e2a}
-      .random-all-card{background:linear-gradient(145deg,#211d1a,#1a1715) !important}
-      .random-count-btn{
+      html[data-effective-theme="dark"] .category-name,html[data-effective-theme="dark"] .record-title,html[data-effective-theme="dark"] .search-item-title,html[data-effective-theme="dark"] .random-pick-title{color:#eee6e0 !important}
+      html[data-effective-theme="dark"] .progress-track{background:#342e2a}
+      html[data-effective-theme="dark"] .random-all-card{background:linear-gradient(145deg,#211d1a,#1a1715) !important}
+      html[data-effective-theme="dark"] .random-count-btn{
         background:#31261e;color:#e5b98f;border-color:#624a38
       }
-      .random-count-btn:hover{background:#3c2d22;border-color:#896345}
-      .random-count-btn.tf{background:#1d302b;color:#9bd1b9;border-color:#3f6656}
-      .random-count-btn.tf:hover{background:#244036;border-color:#578670}
-      .random-draw-stats{background:#211d1a;color:#c5bbb4;border-color:#4a403a}
+      html[data-effective-theme="dark"] .random-count-btn:hover{background:#3c2d22;border-color:#896345}
+      html[data-effective-theme="dark"] .random-count-btn.tf{background:#1d302b;color:#9bd1b9;border-color:#3f6656}
+      html[data-effective-theme="dark"] .random-count-btn.tf:hover{background:#244036;border-color:#578670}
+      html[data-effective-theme="dark"] .random-draw-stats{background:#211d1a;color:#c5bbb4;border-color:#4a403a}
 
       /* 題目 */
-      .question-card:before,.question-number{color:#b6a091}
-      .question-text{color:#f7f1ec}
-      .option-btn{
+      html[data-effective-theme="dark"] .question-card:before,html[data-effective-theme="dark"] .question-number{color:#b6a091}
+      html[data-effective-theme="dark"] .question-text{color:#f7f1ec}
+      html[data-effective-theme="dark"] .option-btn{
         background:#211d1a;color:#eee6e0;border-color:#4a403a
       }
-      .option-btn:hover{background:#28231f}
-      .option-btn.selected{background:#3b2b20;border-color:#9a6b47}
-      .option-btn.correct{background:#1d3429;color:#8bd4aa;border-color:#3d7957}
-      .option-btn.wrong{background:#3a2327;color:#f0a2aa;border-color:#82454e}
-      .option-key{background:#352a23;color:#e6b483}
-      .status.none{color:#c3b7ae;background:#29231f;border-color:#4c413a}
-      .status.ok{color:#8fd3ad;background:#1c3328;border-color:#3d6d51}
-      .status.bad{color:#f2a4ac;background:#3b2529;border-color:#754149}
-      .status.skip{color:#e7c378;background:#3a311f;border-color:#6b582e}
-      .question-practice-count.correct-count{background:#1e3329;color:#8fd1ac;border-color:#406c54}
-      .question-practice-count.wrong-count{background:#3b2529;color:#f0a0aa;border-color:#744149}
+      html[data-effective-theme="dark"] .option-btn:hover{background:#28231f}
+      html[data-effective-theme="dark"] .option-btn.selected{background:#3b2b20;border-color:#9a6b47}
+      html[data-effective-theme="dark"] .option-btn.correct{background:#1d3429;color:#8bd4aa;border-color:#3d7957}
+      html[data-effective-theme="dark"] .option-btn.wrong{background:#3a2327;color:#f0a2aa;border-color:#82454e}
+      html[data-effective-theme="dark"] .option-key{background:#352a23;color:#e6b483}
+      html[data-effective-theme="dark"] .status.none{color:#c3b7ae;background:#29231f;border-color:#4c413a}
+      html[data-effective-theme="dark"] .status.ok{color:#8fd3ad;background:#1c3328;border-color:#3d6d51}
+      html[data-effective-theme="dark"] .status.bad{color:#f2a4ac;background:#3b2529;border-color:#754149}
+      html[data-effective-theme="dark"] .status.skip{color:#e7c378;background:#3a311f;border-color:#6b582e}
+      html[data-effective-theme="dark"] .question-practice-count.correct-count{background:#1e3329;color:#8fd1ac;border-color:#406c54}
+      html[data-effective-theme="dark"] .question-practice-count.wrong-count{background:#3b2529;color:#f0a0aa;border-color:#744149}
 
       /* 作答結果與解析 */
-      .answer-panel{background:#1b1917 !important}
-      .answer-mascot{background:#29231e;border-color:#5d4c40;box-shadow:0 8px 18px rgba(0,0,0,.3)}
-      .answer-head{background:linear-gradient(90deg,#203735,#1d302f)}
-      .answer-result{color:#76d19e}
-      .answer-result.wrong{color:#f29aa3}
-      .answer-badge{background:#40371f;border-color:#716034;color:#f2cd82}
-      .analysis-list{background:#1d1a18 !important;border-color:#453c36}
-      .analysis-item{border-bottom-color:#3f3732}
-      .analysis-title{color:#c0e0e1}
-      .analysis-text{color:#c4cbc9}
-      .analysis-tag{background:#46391e;color:#efc56f}
-      .analysis-tag.correct{background:#1d372a;color:#8bd2a7}
-      .analysis-text.customized{background:#1c3129;color:#b9d9ce;border-color:#3c6555}
-      .analysis-tools{background:#1c2623;border-color:#3c5049}
-      .analysis-tools-note,.analysis-item-status{color:#aebbb7}
-      .analysis-editor,.analysis-bulk-editor{background:#2d291e;border-color:#65572f}
-      .analysis-editor-textarea,.analysis-bulk-textarea{background:#1d1a18;color:#e8e2dd;border-color:#665a38}
-      .analysis-bulk-section{background:#211d1a;border-color:#544933}
-      .analysis-bulk-label{color:#d5d9d7}
-      .analysis-bulk-summary{background:#241f1b;border-color:#51443c}
-      .analysis-cancel-btn,.analysis-bulk-cancel{background:#211d1a;color:#cbd1d4;border-color:#4b555b}
-      .analysis-reset-btn,.analysis-bulk-original{background:#3a2529;color:#f0a2ad;border-color:#70434a}
-      .summary-card{background:#241f1b !important}
-      .summary-title{color:#e6b584}
-      .summary-text{color:#d4cbc5}
-      .summary-text.customized{background:#1d2932;color:#b8d1e2;border-color:#49667a}
-      details{background:#211d1a;border-color:#4a403a}
-      summary{color:#d8c9bf}
-      .detail-body{color:#c5cecc}
-      .note.source{background:#1b302f;border-color:#365a58;color:#9dcaca}
-      .note.memory{background:#3a301c;border-color:#66552d;color:#e4c47e}
-      .note.correct{background:#3a2428;border-color:#6d3d45;color:#eea0a9}
+      html[data-effective-theme="dark"] .answer-panel{background:#1b1917 !important}
+      html[data-effective-theme="dark"] .answer-mascot{background:#29231e;border-color:#5d4c40;box-shadow:0 8px 18px rgba(0,0,0,.3)}
+      html[data-effective-theme="dark"] .answer-head{background:linear-gradient(90deg,#203735,#1d302f)}
+      html[data-effective-theme="dark"] .answer-result{color:#76d19e}
+      html[data-effective-theme="dark"] .answer-result.wrong{color:#f29aa3}
+      html[data-effective-theme="dark"] .answer-badge{background:#40371f;border-color:#716034;color:#f2cd82}
+      html[data-effective-theme="dark"] .analysis-list{background:#1d1a18 !important;border-color:#453c36}
+      html[data-effective-theme="dark"] .analysis-item{border-bottom-color:#3f3732}
+      html[data-effective-theme="dark"] .analysis-title{color:#c0e0e1}
+      html[data-effective-theme="dark"] .analysis-text{color:#c4cbc9}
+      html[data-effective-theme="dark"] .analysis-tag{background:#46391e;color:#efc56f}
+      html[data-effective-theme="dark"] .analysis-tag.correct{background:#1d372a;color:#8bd2a7}
+      html[data-effective-theme="dark"] .analysis-text.customized{background:#1c3129;color:#b9d9ce;border-color:#3c6555}
+      html[data-effective-theme="dark"] .analysis-tools{background:#1c2623;border-color:#3c5049}
+      html[data-effective-theme="dark"] .analysis-tools-note,html[data-effective-theme="dark"] .analysis-item-status{color:#aebbb7}
+      html[data-effective-theme="dark"] .analysis-editor,html[data-effective-theme="dark"] .analysis-bulk-editor{background:#2d291e;border-color:#65572f}
+      html[data-effective-theme="dark"] .analysis-editor-textarea,html[data-effective-theme="dark"] .analysis-bulk-textarea{background:#1d1a18;color:#e8e2dd;border-color:#665a38}
+      html[data-effective-theme="dark"] .analysis-bulk-section{background:#211d1a;border-color:#544933}
+      html[data-effective-theme="dark"] .analysis-bulk-label{color:#d5d9d7}
+      html[data-effective-theme="dark"] .analysis-bulk-summary{background:#241f1b;border-color:#51443c}
+      html[data-effective-theme="dark"] .analysis-cancel-btn,html[data-effective-theme="dark"] .analysis-bulk-cancel{background:#211d1a;color:#cbd1d4;border-color:#4b555b}
+      html[data-effective-theme="dark"] .analysis-reset-btn,html[data-effective-theme="dark"] .analysis-bulk-original{background:#3a2529;color:#f0a2ad;border-color:#70434a}
+      html[data-effective-theme="dark"] .summary-card{background:#241f1b !important}
+      html[data-effective-theme="dark"] .summary-title{color:#e6b584}
+      html[data-effective-theme="dark"] .summary-text{color:#d4cbc5}
+      html[data-effective-theme="dark"] .summary-text.customized{background:#1d2932;color:#b8d1e2;border-color:#49667a}
+      html[data-effective-theme="dark"] details{background:#211d1a;border-color:#4a403a}
+      html[data-effective-theme="dark"] summary{color:#d8c9bf}
+      html[data-effective-theme="dark"] .detail-body{color:#c5cecc}
+      html[data-effective-theme="dark"] .note.source{background:#1b302f;border-color:#365a58;color:#9dcaca}
+      html[data-effective-theme="dark"] .note.memory{background:#3a301c;border-color:#66552d;color:#e4c47e}
+      html[data-effective-theme="dark"] .note.correct{background:#3a2428;border-color:#6d3d45;color:#eea0a9}
 
       /* AI 筆記與查詢 */
-      .ai-query-box{background:linear-gradient(145deg,#211d1a,#241e19);border-color:#4a4038}
-      .ai-query-title{color:#eaded5}
-      .ai-query-note{color:#b8ada6}
-      .ai-query-btn.chatgpt,.gemini-note-btn.chatgpt{background:#1b302c;color:#9ad0c1;border-color:#3b675a}
-      .ai-query-btn.gemini,.gemini-note-btn.gemini{background:#252a3e;color:#aebbe8;border-color:#4a567b}
-      .gemini-note-btn.copy-only{background:#2e281f;color:#d9c1a0;border-color:#5a4b36}
-      .gemini-note-card,.gemini-note-body{background:#1d1a18 !important;border-color:#453c36 !important}
-      .gemini-note-readonly{
+      html[data-effective-theme="dark"] .ai-query-box{background:linear-gradient(145deg,#211d1a,#241e19);border-color:#4a4038}
+      html[data-effective-theme="dark"] .ai-query-title{color:#eaded5}
+      html[data-effective-theme="dark"] .ai-query-note{color:#b8ada6}
+      html[data-effective-theme="dark"] .ai-query-btn.chatgpt,html[data-effective-theme="dark"] .gemini-note-btn.chatgpt{background:#1b302c;color:#9ad0c1;border-color:#3b675a}
+      html[data-effective-theme="dark"] .ai-query-btn.gemini,html[data-effective-theme="dark"] .gemini-note-btn.gemini{background:#252a3e;color:#aebbe8;border-color:#4a567b}
+      html[data-effective-theme="dark"] .gemini-note-btn.copy-only{background:#2e281f;color:#d9c1a0;border-color:#5a4b36}
+      html[data-effective-theme="dark"] .gemini-note-card,html[data-effective-theme="dark"] .gemini-note-body{background:#1d1a18 !important;border-color:#453c36 !important}
+      html[data-effective-theme="dark"] .gemini-note-readonly{
         background:repeating-linear-gradient(0deg,#1d211f 0,#1d211f 31px,#27302c 32px) !important;
         color:#d4dce6 !important
       }
-      .gemini-note-edit-unlocked{background:#393019;color:#e5c577;border-color:#6a572d}
+      html[data-effective-theme="dark"] .gemini-note-edit-unlocked{background:#393019;color:#e5c577;border-color:#6a572d}
 
       /* 搜尋、紀錄、分頁 */
-      .tabs{background:#221e1b;border-color:#4a4038}
-      .tab-btn{color:#b7aca4}
-      .record-row{border-bottom-color:#3e3631}
-      .metric-value{color:#e1a774}
+      html[data-effective-theme="dark"] .tabs{background:#221e1b;border-color:#4a4038}
+      html[data-effective-theme="dark"] .tab-btn{color:#b7aca4}
+      html[data-effective-theme="dark"] .record-row{border-bottom-color:#3e3631}
+      html[data-effective-theme="dark"] .metric-value{color:#e1a774}
 
       /* 底部導覽 */
-      .bottom-nav{
+      html[data-effective-theme="dark"] .bottom-nav{
         background:rgba(24,21,19,.94);
         border-top-color:#403832;
         box-shadow:0 -8px 24px rgba(0,0,0,.3)
       }
-      .nav-btn{color:#a99d95}
+      html[data-effective-theme="dark"] .nav-btn{color:#a99d95}
 
       /* 登入、同步、管理介面 */
-      .auth-dialog,.admin-dialog{background:#1b1917 !important;color:#eee6e0}
-      .auth-dialog-head{background:linear-gradient(145deg,#2a211b,#1b2a28) !important;border-bottom-color:#463b34 !important}
-      .auth-dialog-title{color:#f1e8e1}
-      .auth-dialog-sub{color:#b9aea7}
-      .auth-provider-btn{background:#1b312d;color:#8ec9bb;border-color:#3d6258}
-      .auth-divider{color:#958a83}.auth-divider:before,.auth-divider:after{background:#463d37}
-      .account-role-badge{background:#29231f;color:#c7bbb3;border-color:#4c413a}
-      .account-role-badge.admin{background:#1d3429;color:#8acfa9;border-color:#3b6b50}
-      .admin-open-btn{background:#1d3129;color:#9bcdb6;border-color:#406554}
-      .admin-role-help,.admin-privacy-note{background:#211d1a;color:#c1b7b0;border-color:#4a4038}
-      .admin-role-help.ok{background:#1d3229;color:#9dd0b8;border-color:#406753}
-      .admin-role-help.error{background:#3a2529;color:#eba4a8;border-color:#6b4146}
-      .admin-metric{background:#1d2924;border-color:#3e5148}
-      .admin-metric-label{color:#a8b2ad}.admin-metric-value{color:#d8e1dc}
-      .admin-table-wrap,.admin-table{background:#1d1a18;border-color:#403933;color:#ddd6d0}
-      .admin-table th{background:#25221f;color:#b4aaa3;border-bottom-color:#423a35}
-      .admin-table td{border-bottom-color:#39332f}
-      .admin-user-main{color:#dce2df}.admin-user-sub{color:#9ba19e}
-      .admin-role-pill{background:#292725;color:#b8bfbb}.admin-role-pill.admin{background:#1d3329;color:#8ac8a8}
-      .admin-ip{color:#9fb3a8}
+      html[data-effective-theme="dark"] .auth-dialog,html[data-effective-theme="dark"] .admin-dialog{background:#1b1917 !important;color:#eee6e0}
+      html[data-effective-theme="dark"] .auth-dialog-head{background:linear-gradient(145deg,#2a211b,#1b2a28) !important;border-bottom-color:#463b34 !important}
+      html[data-effective-theme="dark"] .auth-dialog-title{color:#f1e8e1}
+      html[data-effective-theme="dark"] .auth-dialog-sub{color:#b9aea7}
+      html[data-effective-theme="dark"] .auth-provider-btn{background:#1b312d;color:#8ec9bb;border-color:#3d6258}
+      html[data-effective-theme="dark"] .auth-divider{color:#958a83}html[data-effective-theme="dark"] .auth-divider:before,html[data-effective-theme="dark"] .auth-divider:after{background:#463d37}
+      html[data-effective-theme="dark"] .account-role-badge{background:#29231f;color:#c7bbb3;border-color:#4c413a}
+      html[data-effective-theme="dark"] .account-role-badge.admin{background:#1d3429;color:#8acfa9;border-color:#3b6b50}
+      html[data-effective-theme="dark"] .admin-open-btn{background:#1d3129;color:#9bcdb6;border-color:#406554}
+      html[data-effective-theme="dark"] .admin-role-help,html[data-effective-theme="dark"] .admin-privacy-note{background:#211d1a;color:#c1b7b0;border-color:#4a4038}
+      html[data-effective-theme="dark"] .admin-role-help.ok{background:#1d3229;color:#9dd0b8;border-color:#406753}
+      html[data-effective-theme="dark"] .admin-role-help.error{background:#3a2529;color:#eba4a8;border-color:#6b4146}
+      html[data-effective-theme="dark"] .admin-metric{background:#1d2924;border-color:#3e5148}
+      html[data-effective-theme="dark"] .admin-metric-label{color:#a8b2ad}html[data-effective-theme="dark"] .admin-metric-value{color:#d8e1dc}
+      html[data-effective-theme="dark"] .admin-table-wrap,html[data-effective-theme="dark"] .admin-table{background:#1d1a18;border-color:#403933;color:#ddd6d0}
+      html[data-effective-theme="dark"] .admin-table th{background:#25221f;color:#b4aaa3;border-bottom-color:#423a35}
+      html[data-effective-theme="dark"] .admin-table td{border-bottom-color:#39332f}
+      html[data-effective-theme="dark"] .admin-user-main{color:#dce2df}html[data-effective-theme="dark"] .admin-user-sub{color:#9ba19e}
+      html[data-effective-theme="dark"] .admin-role-pill{background:#292725;color:#b8bfbb}html[data-effective-theme="dark"] .admin-role-pill.admin{background:#1d3329;color:#8ac8a8}
+      html[data-effective-theme="dark"] .admin-ip{color:#9fb3a8}
 
       /* 法規閱讀器：保留法規圖片原色，僅周邊介面轉深色 */
-      .law-entry-card,.law-reader-card,.law-chapter-shortcut-card,.law-catalog-jump-card{
+      html[data-effective-theme="dark"] .law-entry-card,html[data-effective-theme="dark"] .law-reader-card,html[data-effective-theme="dark"] .law-chapter-shortcut-card,html[data-effective-theme="dark"] .law-catalog-jump-card{
         background:#1d1a18 !important;border-color:#453c36 !important
       }
-      .law-chapter-shortcut-title,.law-catalog-jump-title{color:#d9c7b8}
-      .law-chapter-shortcut-hint,.law-catalog-jump-hint,.law-catalog-info{color:#aaa099}
-      .law-chapter-btn{background:#29231f;color:#d6b99f;border-color:#58463a}
-      .law-chapter-btn.active{background:#463122;color:#f0bd8a;border-color:#855a3d}
-      .law-catalog-search,.law-catalog-select{background:#211d1a;color:#eee8e3;border-color:#4c423c}
-      .law-catalog-go-btn{background:#1d3127;color:#9fd0b0;border-color:#42634e}
-      .law-catalog-info{background:#211d1a}
-      .law-page-wrap,.law-canvas-wrap{background:#2a2724 !important;border-color:#4a423c !important}
-      .law-page-image{box-shadow:0 8px 28px rgba(0,0,0,.45)}
+      html[data-effective-theme="dark"] .law-chapter-shortcut-title,html[data-effective-theme="dark"] .law-catalog-jump-title{color:#d9c7b8}
+      html[data-effective-theme="dark"] .law-chapter-shortcut-hint,html[data-effective-theme="dark"] .law-catalog-jump-hint,html[data-effective-theme="dark"] .law-catalog-info{color:#aaa099}
+      html[data-effective-theme="dark"] .law-chapter-btn{background:#29231f;color:#d6b99f;border-color:#58463a}
+      html[data-effective-theme="dark"] .law-chapter-btn.active{background:#463122;color:#f0bd8a;border-color:#855a3d}
+      html[data-effective-theme="dark"] .law-catalog-search,html[data-effective-theme="dark"] .law-catalog-select{background:#211d1a;color:#eee8e3;border-color:#4c423c}
+      html[data-effective-theme="dark"] .law-catalog-go-btn{background:#1d3127;color:#9fd0b0;border-color:#42634e}
+      html[data-effective-theme="dark"] .law-catalog-info{background:#211d1a}
+      html[data-effective-theme="dark"] .law-page-wrap,html[data-effective-theme="dark"] .law-canvas-wrap{background:#2a2724 !important;border-color:#4a423c !important}
+      html[data-effective-theme="dark"] .law-page-image{box-shadow:0 8px 28px rgba(0,0,0,.45)}
 
       /* Toast */
-      .toast{background:#2e211a;color:#fff4ec;box-shadow:0 10px 24px rgba(0,0,0,.4)}
-    }
+      html[data-effective-theme="dark"] .toast{background:#2e211a;color:#fff4ec;box-shadow:0 10px 24px rgba(0,0,0,.4)}
+    
 
     /* =========================================================
-       V23.2.9.9 各章節未作答題目
+       V23.2.9.10 各章節未作答題目
        ========================================================= */
     .category-unanswered-bar{
       display:flex;
@@ -2695,48 +2718,95 @@
       }
     }
 
-    @media (prefers-color-scheme: dark){
-      .category-unanswered-count{color:#b8aaa1}
-      .category-unanswered-toggle{
+    
+      html[data-effective-theme="dark"] .category-unanswered-count{color:#b8aaa1}
+      html[data-effective-theme="dark"] .category-unanswered-toggle{
         background:#2a231f;
         color:#e4c4a6;
         border-color:#5a493e;
       }
-      .category-unanswered-toggle:hover{
+      html[data-effective-theme="dark"] .category-unanswered-toggle:hover{
         background:#342920;
         border-color:#805d43;
       }
-      .category-unanswered-toggle.done{
+      html[data-effective-theme="dark"] .category-unanswered-toggle.done{
         background:#20312b;
         color:#8fd0aa;
         border-color:#355a48;
       }
-      .category-unanswered-panel{
+      html[data-effective-theme="dark"] .category-unanswered-panel{
         background:#191715;
         border-color:#443a34;
       }
-      .unanswered-group-title{color:#c9bbb3}
-      .unanswered-question-btn{
+      html[data-effective-theme="dark"] .unanswered-group-title{color:#c9bbb3}
+      html[data-effective-theme="dark"] .unanswered-question-btn{
         background:#241f1c;
         color:#e8ddd6;
         border-color:#4e433c;
       }
-      .unanswered-question-btn:hover{
+      html[data-effective-theme="dark"] .unanswered-question-btn:hover{
         background:#342820;
         border-color:#7b5b42;
       }
-      .unanswered-question-btn.tf{
+      html[data-effective-theme="dark"] .unanswered-question-btn.tf{
         background:#1c2b29;
         color:#a5d3cc;
         border-color:#355653;
       }
-      .unanswered-question-btn.skipped::after{
+      html[data-effective-theme="dark"] .unanswered-question-btn.skipped::after{
         background:#3d321d;
         color:#e5bb69;
       }
-      .unanswered-empty{color:#8bc8a2}
+      html[data-effective-theme="dark"] .unanswered-empty{color:#8bc8a2}
+    
+  
+
+
+    /* V23.2.9.10 手動外觀切換 */
+    .theme-open-btn{display:grid;place-items:center;font-size:18px;font-weight:900}
+    .theme-sheet{
+      position:fixed;inset:0;z-index:1200;display:flex;align-items:flex-end;justify-content:center;
+      padding:18px;background:rgba(20,15,12,.42);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)
     }
-  </style>
+    .theme-sheet.hidden{display:none}
+    .theme-panel{
+      width:min(520px,100%);border:1px solid var(--line);border-radius:22px;background:var(--surface);
+      color:var(--ink);box-shadow:0 24px 70px rgba(0,0,0,.28);padding:17px;
+      padding-bottom:calc(17px + env(safe-area-inset-bottom))
+    }
+    .theme-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}
+    .theme-panel-title{font-size:17px;font-weight:950;color:var(--ink)}
+    .theme-panel-close{
+      width:38px;height:38px;border:1px solid var(--line);border-radius:12px;background:var(--surface2);
+      color:var(--ink);font-size:17px
+    }
+    .theme-panel-note{margin:0 0 13px;color:var(--muted);font-size:11px;line-height:1.7}
+    .theme-choice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+    .theme-choice-btn{
+      min-height:82px;border:1px solid var(--line);border-radius:15px;background:var(--surface2);
+      color:var(--ink);padding:10px 8px;font-weight:900
+    }
+    .theme-choice-btn .theme-icon{display:block;font-size:23px;margin-bottom:5px}
+    .theme-choice-btn .theme-label{display:block;font-size:11px}
+    .theme-choice-btn .theme-sub{display:block;margin-top:3px;color:var(--muted);font-size:8px;font-weight:750;line-height:1.35}
+    .theme-choice-btn.active{border-color:var(--orange);box-shadow:0 0 0 2px rgba(213,139,69,.24)}
+    .theme-current{
+      margin-top:11px;padding:8px 10px;border:1px solid var(--line);border-radius:11px;background:var(--surface2);
+      color:var(--muted);font-size:10px;line-height:1.55
+    }
+    @media(max-width:520px){
+      .theme-sheet{padding:10px}
+      .theme-panel{border-radius:20px}
+      .theme-choice-grid{grid-template-columns:1fr}
+      .theme-choice-btn{
+        min-height:58px;display:grid;grid-template-columns:34px 1fr;grid-template-rows:auto auto;
+        column-gap:8px;text-align:left;align-items:center
+      }
+      .theme-choice-btn .theme-icon{grid-row:1 / span 2;margin:0;text-align:center}
+      .theme-choice-btn .theme-label{font-size:12px}
+      .theme-choice-btn .theme-sub{font-size:9px}
+    }
+</style>
 </head>
 <body>
 <div class="app">
@@ -2749,7 +2819,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">V23.2.9.9 AI筆記＋章節未作答題目版</div>
+          <div class="brand-sub">V23.2.9.10 AI筆記＋iPhone／iPad手動外觀版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -2757,6 +2827,7 @@
           ☁ <span data-auth-button-label>登入同步</span>
         </button>
         <button class="admin-open-btn hidden" type="button" data-open-admin data-admin-only>🛡 管理</button>
+        <button class="icon-btn theme-open-btn" id="themeBtn" type="button" aria-label="調整外觀" title="外觀">◐</button>
         <button class="icon-btn" id="shareBtn" aria-label="分享">↗</button>
       </div>
     </div>
@@ -4564,6 +4635,49 @@ function getCategoryQuestions(category,type="all"){
   return QUESTIONS.filter(q=>q.category===category&&(type==="all"||q.type===type))
 }
 
+function themeModeText(mode){
+  if(mode==="light")return "一般模式";
+  if(mode==="dark")return "深色模式";
+  return "跟隨系統";
+}
+function updateThemeControls(){
+  const mode=window.__getProcurementThemeMode?.()||document.documentElement.dataset.themeMode||"auto";
+  const effective=document.documentElement.dataset.effectiveTheme||"light";
+  const btn=$("themeBtn");
+  if(btn){
+    btn.textContent=effective==="dark"?"☾":"☀";
+    btn.setAttribute("aria-label",`調整外觀，目前：${themeModeText(mode)}`);
+    btn.title=`外觀：${themeModeText(mode)}`;
+  }
+  document.querySelectorAll("[data-theme-choice]").forEach(choice=>{
+    choice.classList.toggle("active",choice.dataset.themeChoice===mode)
+  });
+  const label=$("themeCurrentLabel");
+  if(label)label.textContent=`目前設定：${themeModeText(mode)}｜實際顯示：${effective==="dark"?"深色":"一般"}`;
+}
+function openThemeSheet(){
+  const sheet=$("themeSheet");if(!sheet)return;
+  updateThemeControls();sheet.classList.remove("hidden");sheet.setAttribute("aria-hidden","false")
+}
+function closeThemeSheet(){
+  const sheet=$("themeSheet");if(!sheet)return;
+  sheet.classList.add("hidden");sheet.setAttribute("aria-hidden","true")
+}
+function setThemeMode(mode){
+  window.__applyProcurementTheme?.(mode,true);updateThemeControls();closeThemeSheet();
+  toast(mode==="auto"?"顯示模式已改為跟隨系統":mode==="dark"?"已切換為深色模式":"已切換為一般模式")
+}
+function setupThemeControls(){
+  $("themeBtn")?.addEventListener("click",openThemeSheet);
+  $("themeCloseBtn")?.addEventListener("click",closeThemeSheet);
+  document.querySelectorAll("[data-theme-choice]").forEach(choice=>{
+    choice.addEventListener("click",()=>setThemeMode(choice.dataset.themeChoice))
+  });
+  $("themeSheet")?.addEventListener("click",e=>{if(e.target===$("themeSheet"))closeThemeSheet()});
+  window.addEventListener("procurement-theme-change",updateThemeControls);
+  updateThemeControls()
+}
+
 function init(){
   $("totalChip").textContent=`共 ${QUESTIONS.length.toLocaleString()} 題`;
   $("categoryChip").textContent=`${CATEGORIES.length} 個主題`;
@@ -5616,13 +5730,40 @@ window.quizSyncBridge={
 };
 
 init();
+setupThemeControls();
 setupLawReader();
 applyQuestionLawDeepLink();
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
-  navigator.serviceWorker.register("./sw.js?v=23.2.9.9").catch(()=>{})
+  navigator.serviceWorker.register("./sw.js?v=23.2.9.10").catch(()=>{})
 }
 </script>
 <script src="./firebase-config.js"></script>
-<script type="module" src="./firebase-sync.js?v=23.2.9.9"></script>
+<script type="module" src="./firebase-sync.js?v=23.2.9.10"></script>
+<div class="theme-sheet hidden" id="themeSheet" aria-hidden="true">
+  <div class="theme-panel" role="dialog" aria-modal="true" aria-labelledby="themePanelTitle">
+    <div class="theme-panel-head">
+      <div class="theme-panel-title" id="themePanelTitle">調整顯示模式</div>
+      <button class="theme-panel-close" id="themeCloseBtn" type="button" aria-label="關閉">✕</button>
+    </div>
+    <p class="theme-panel-note">
+      iPhone／iPad 可自行指定一般或深色模式，也可選擇「跟隨系統」自動配合 iOS／iPadOS 外觀設定。
+    </p>
+    <div class="theme-choice-grid">
+      <button class="theme-choice-btn" type="button" data-theme-choice="auto">
+        <span class="theme-icon">◐</span><span class="theme-label">跟隨系統</span>
+        <span class="theme-sub">依 iPhone／iPad 外觀自動切換</span>
+      </button>
+      <button class="theme-choice-btn" type="button" data-theme-choice="light">
+        <span class="theme-icon">☀️</span><span class="theme-label">一般模式</span>
+        <span class="theme-sub">固定使用淺色版面</span>
+      </button>
+      <button class="theme-choice-btn" type="button" data-theme-choice="dark">
+        <span class="theme-icon">🌙</span><span class="theme-label">深色模式</span>
+        <span class="theme-sub">固定使用深色版面</span>
+      </button>
+    </div>
+    <div class="theme-current" id="themeCurrentLabel"></div>
+  </div>
+</div>
 </body>
 </html>
