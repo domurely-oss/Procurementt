@@ -2578,6 +2578,164 @@
       .toast{background:#2e211a;color:#fff4ec;box-shadow:0 10px 24px rgba(0,0,0,.4)}
     }
 
+    /* =========================================================
+       V23.2.9.9 各章節未作答題目
+       ========================================================= */
+    .category-unanswered-bar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-top:10px;
+    }
+    .category-unanswered-count{
+      color:#8a6f5f;
+      font-size:11px;
+      font-weight:850;
+    }
+    .category-unanswered-toggle{
+      min-height:34px;
+      padding:6px 10px;
+      border:1px solid #dfcdbc;
+      border-radius:10px;
+      background:#fff8f0;
+      color:#735541;
+      font-size:10px;
+      font-weight:900;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .category-unanswered-toggle:hover{
+      background:#fff1e3;
+      border-color:#cda989;
+    }
+    .category-unanswered-toggle.done{
+      background:#eff8f3;
+      border-color:#b9d9c6;
+      color:#4d725d;
+      cursor:default;
+    }
+    .category-unanswered-panel{
+      margin-top:10px;
+      padding:10px;
+      border:1px solid #e5d9ce;
+      border-radius:12px;
+      background:#fffdf9;
+      max-height:230px;
+      overflow:auto;
+      scrollbar-width:thin;
+    }
+    .category-unanswered-panel.hidden{display:none !important}
+    .unanswered-group + .unanswered-group{margin-top:10px}
+    .unanswered-group-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-bottom:7px;
+      color:#68574d;
+      font-size:10px;
+      font-weight:900;
+    }
+    .unanswered-question-grid{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+    .unanswered-question-btn{
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      min-height:32px;
+      padding:5px 8px;
+      border:1px solid #ddd2c7;
+      border-radius:9px;
+      background:#fff;
+      color:#57483f;
+      font-size:10px;
+      font-weight:850;
+      cursor:pointer;
+    }
+    .unanswered-question-btn:hover{
+      border-color:#c79569;
+      background:#fff4e8;
+    }
+    .unanswered-question-btn.tf{
+      border-color:#c9ded8;
+      background:#f5fbf9;
+      color:#456d63;
+    }
+    .unanswered-question-btn.skipped::after{
+      content:"曾略過";
+      padding:1px 5px;
+      border-radius:999px;
+      background:#fff0c9;
+      color:#8c611e;
+      font-size:8px;
+      font-weight:900;
+    }
+    .unanswered-empty{
+      padding:8px 2px 3px;
+      color:#4f775e;
+      font-size:11px;
+      font-weight:850;
+    }
+    @media(max-width:620px){
+      .category-unanswered-bar{
+        align-items:flex-start;
+      }
+      .category-unanswered-toggle{
+        min-height:38px;
+      }
+      .category-unanswered-panel{
+        max-height:260px;
+      }
+      .unanswered-question-btn{
+        min-height:36px;
+      }
+    }
+
+    @media (prefers-color-scheme: dark){
+      .category-unanswered-count{color:#b8aaa1}
+      .category-unanswered-toggle{
+        background:#2a231f;
+        color:#e4c4a6;
+        border-color:#5a493e;
+      }
+      .category-unanswered-toggle:hover{
+        background:#342920;
+        border-color:#805d43;
+      }
+      .category-unanswered-toggle.done{
+        background:#20312b;
+        color:#8fd0aa;
+        border-color:#355a48;
+      }
+      .category-unanswered-panel{
+        background:#191715;
+        border-color:#443a34;
+      }
+      .unanswered-group-title{color:#c9bbb3}
+      .unanswered-question-btn{
+        background:#241f1c;
+        color:#e8ddd6;
+        border-color:#4e433c;
+      }
+      .unanswered-question-btn:hover{
+        background:#342820;
+        border-color:#7b5b42;
+      }
+      .unanswered-question-btn.tf{
+        background:#1c2b29;
+        color:#a5d3cc;
+        border-color:#355653;
+      }
+      .unanswered-question-btn.skipped::after{
+        background:#3d321d;
+        color:#e5bb69;
+      }
+      .unanswered-empty{color:#8bc8a2}
+    }
   </style>
 </head>
 <body>
@@ -2591,7 +2749,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">V23.2.9.8 AI筆記＋iPad自動深色模式版</div>
+          <div class="brand-sub">V23.2.9.9 AI筆記＋章節未作答題目版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -4519,28 +4677,137 @@ function jumpToQuestion(){
   window.scrollTo({top:0,behavior:"smooth"})
 }
 
+const categoryUnansweredOpen=new Set();
+
+function categoryUnansweredQuestions(category){
+  return getCategoryQuestions(category)
+    .filter(q=>Number(questionProgress(q).attempts||0)===0)
+}
+
+function renderCategoryUnansweredPanel(category,questions,isOpen){
+  if(!questions.length){
+    return `<div class="unanswered-empty">✓ 本章節已全部作答</div>`
+  }
+
+  const choice=questions.filter(q=>q.type==="choice");
+  const tf=questions.filter(q=>q.type==="true_false");
+
+  const group=(label,list,typeClass="")=>{
+    if(!list.length)return "";
+    const buttons=list.map(q=>{
+      const skipped=Number(questionProgress(q).skipped||0)>0;
+      return `<button type="button"
+                      class="unanswered-question-btn ${typeClass} ${skipped?"skipped":""}"
+                      data-unanswered-question="${esc(q.id)}"
+                      data-unanswered-category="${esc(category)}"
+                      title="${esc(String(q.question).replace(/\\s+/g," ").slice(0,80))}">
+        ${labelType(q.type)} ${esc(q.number)}
+      </button>`
+    }).join("");
+
+    return `<div class="unanswered-group">
+      <div class="unanswered-group-title">
+        <span>${label}</span><span>${list.length.toLocaleString()} 題</span>
+      </div>
+      <div class="unanswered-question-grid">${buttons}</div>
+    </div>`
+  };
+
+  return `<div class="category-unanswered-panel ${isOpen?"":"hidden"}" data-unanswered-panel="${esc(category)}">
+    ${group("選擇題",choice,"")}
+    ${group("是非題",tf,"tf")}
+  </div>`
+}
+
+function toggleCategoryUnanswered(category){
+  if(categoryUnansweredOpen.has(category)){
+    categoryUnansweredOpen.delete(category)
+  }else{
+    categoryUnansweredOpen.add(category)
+  }
+  renderHome()
+}
+
+function openCategoryUnansweredQuestion(category,questionId){
+  const q=QMAP.get(questionId);
+  if(!q)return;
+
+  session={
+    category,
+    type:q.type,
+    scope:"single",
+    order:"single",
+    ids:[q.id],
+    index:0
+  };
+
+  saveSession();
+  selectedAnswer=null;
+  answered=false;
+  showView("practiceView")
+}
+
 function renderHome(){
   updateQuestionSelect();
   const rows=CATEGORIES.map(category=>{
     const qs=getCategoryQuestions(category);
-    const done=qs.filter(q=>questionProgress(q).attempts>0).length;
+    const done=qs.filter(q=>Number(questionProgress(q).attempts||0)>0).length;
+    const unanswered=categoryUnansweredQuestions(category);
     const skipped=qs.filter(q=>(questionProgress(q).skipped||0)>0).length;
     const pct=qs.length?done/qs.length*100:0;
+    const isOpen=categoryUnansweredOpen.has(category);
+    const toggleText=unanswered.length
+      ?`${isOpen?"收合":"查看"}未作答 ${unanswered.length.toLocaleString()} 題 ${isOpen?"▲":"▼"}`
+      :"本章已全部作答";
+
     return `<div class="category-row" data-category="${esc(category)}">
       <div class="category-head">
         <div class="category-name">${esc(category)}</div>
         <div class="category-count">${qs.length.toLocaleString()} 題</div>
       </div>
       <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
-      <div class="progress-meta"><span>已作答 ${done.toLocaleString()}・略過 ${skipped.toLocaleString()}</span><span>${pct.toFixed(1)}%</span></div>
+      <div class="progress-meta">
+        <span>已作答 ${done.toLocaleString()}・未作答 ${unanswered.length.toLocaleString()}・略過 ${skipped.toLocaleString()}</span>
+        <span>${pct.toFixed(1)}%</span>
+      </div>
+      <div class="category-unanswered-bar">
+        <span class="category-unanswered-count">未作答以「尚未正式送出答案」計算</span>
+        <button type="button"
+                class="category-unanswered-toggle ${unanswered.length?"":"done"}"
+                data-unanswered-toggle="${esc(category)}"
+                ${unanswered.length?"":"disabled"}>
+          ${toggleText}
+        </button>
+      </div>
+      ${renderCategoryUnansweredPanel(category,unanswered,isOpen)}
     </div>`
   }).join("");
+
   $("categoryProgress").innerHTML=rows;
+
   document.querySelectorAll(".category-row").forEach(row=>row.addEventListener("click",()=>{
     $("categorySelect").value=row.dataset.category;
     updateQuestionSelect();
     window.scrollTo({top:0,behavior:"smooth"})
-  }))
+  }));
+
+  document.querySelectorAll("[data-unanswered-toggle]").forEach(btn=>{
+    btn.addEventListener("click",event=>{
+      event.stopPropagation();
+      if(btn.disabled)return;
+      toggleCategoryUnanswered(btn.dataset.unansweredToggle)
+    })
+  });
+
+  document.querySelectorAll("[data-unanswered-question]").forEach(btn=>{
+    btn.addEventListener("click",event=>{
+      event.stopPropagation();
+      openCategoryUnansweredQuestion(
+        btn.dataset.unansweredCategory,
+        btn.dataset.unansweredQuestion
+      )
+    })
+  })
 }
 function renderRandomAllCounts(){
   const choiceCount=QUESTIONS.filter(q=>q.type==="choice").length;
@@ -5352,10 +5619,10 @@ init();
 setupLawReader();
 applyQuestionLawDeepLink();
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
-  navigator.serviceWorker.register("./sw.js?v=23.2.9.8").catch(()=>{})
+  navigator.serviceWorker.register("./sw.js?v=23.2.9.9").catch(()=>{})
 }
 </script>
 <script src="./firebase-config.js"></script>
-<script type="module" src="./firebase-sync.js?v=23.2.9.8"></script>
+<script type="module" src="./firebase-sync.js?v=23.2.9.9"></script>
 </body>
 </html>
