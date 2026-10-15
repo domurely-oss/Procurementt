@@ -6,10 +6,29 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="採購題庫">
+  <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#744321">
   <title>政府採購題庫練習系統</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
+  <script>
+    // V23.2.9.8：自動跟隨 iPad / iPhone / macOS 系統深色模式
+    (()=>{
+      const media=window.matchMedia?.('(prefers-color-scheme: dark)');
+      const apply=()=>{
+        const dark=!!media?.matches;
+        document.documentElement.dataset.systemTheme=dark?'dark':'light';
+        const meta=document.querySelector('meta[name="theme-color"]');
+        if(meta)meta.setAttribute('content',dark?'#141210':'#744321');
+        const status=document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if(status)status.setAttribute('content',dark?'black-translucent':'default');
+      };
+      apply();
+      if(media?.addEventListener)media.addEventListener('change',apply);
+      else if(media?.addListener)media.addListener(apply);
+    })();
+  </script>
+
   <style>
 
     :root{
@@ -2217,7 +2236,7 @@
     }
 
 
-    /* V23.2.9.4 答對／答錯次數提示（V23.2.9.7沿用） */
+    /* V23.2.9.4 答對／答錯次數提示（V23.2.9.8沿用） */
     .question-practice-count.correct-count{
       border-color:#b7d9c5;
       background:#edf8f2;
@@ -2236,7 +2255,7 @@
       }
     }
 
-    /* V23.2.9.7 隨機抽題：抽題次數＋三抽不重複 */
+    /* V23.2.9.8 隨機抽題：抽題次數＋三抽不重複 */
     .random-draw-stats{
       margin-top:9px;
       padding:8px 10px;
@@ -2312,7 +2331,7 @@
       }
     }
 
-    /* V23.2.9.7 取消曾略過註記 */
+    /* V23.2.9.8 取消曾略過註記 */
     .clear-skip-btn{
       width:100%;
       min-height:42px;
@@ -2330,6 +2349,235 @@
       border-color:#c8ad98;
     }
     .clear-skip-btn.hidden{display:none !important;}
+
+    /* =========================================================
+       V23.2.9.8 iPad / iPhone / macOS 自動深色模式
+       跟隨系統「外觀」設定，不需手動切換。
+       ========================================================= */
+    html{color-scheme:light dark}
+
+    @media (prefers-color-scheme: dark){
+      :root{
+        --bg:#141210;
+        --surface:#1d1a18;
+        --surface2:#231f1c;
+        --ink:#f3eee9;
+        --muted:#b9afa8;
+        --line:#453c36;
+        --brown:#b87b4d;
+        --brown2:#d19869;
+        --orange:#e0a05f;
+        --teal:#55b5ba;
+        --mint:#203a38;
+        --mint2:#1c3332;
+        --ok:#65c494;
+        --bad:#f28b91;
+        --warn:#e1ac59;
+        --gold:#5a492b;
+        --shadow:0 16px 38px rgba(0,0,0,.34);
+      }
+
+      html{color-scheme:dark}
+      body{
+        color:var(--ink);
+        background-color:var(--bg);
+        background-image:
+          radial-gradient(circle,rgba(224,160,95,.09) 1.1px,transparent 1.2px),
+          linear-gradient(180deg,rgba(255,255,255,.012),rgba(255,255,255,.012));
+      }
+
+      /* 頂端與主標題 */
+      .topbar{
+        background:linear-gradient(180deg,#2a1d17,#1c1512);
+        border-bottom-color:#46352c;
+        box-shadow:0 8px 24px rgba(0,0,0,.34);
+      }
+      .brand-mark{background:#2a211c;color:#efb37b;border-color:#5b4638}
+      .brand-sub{color:#cabdb5}
+      .icon-btn{background:#322620;border-color:#5f493c;color:#f7eee8}
+      .hero{
+        background:linear-gradient(138deg,#4a3025 0%,#34231c 58%,#1f1916 100%);
+        box-shadow:0 18px 42px rgba(0,0,0,.34)
+      }
+      .hero small,.chip{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14)}
+      .practice-title{color:#f4eee8}
+      .practice-title span:after{background:#715033}
+      .section-title,.analysis-heading{color:#b9e2e3}
+
+      /* 一般卡片與表單 */
+      .card,.category-row,.question-card,.search-item,.metric,
+      .summary-card,.analysis-list,.answer-panel,.random-pick-group,
+      .law-reader-card,.law-entry-card,.sync-card,.auth-user-card{
+        background:#1d1a18 !important;
+        border-color:#453c36 !important;
+        box-shadow:0 10px 28px rgba(0,0,0,.24)
+      }
+      label.field,.quiz-meta,.category-count,.progress-meta,.metric-label,
+      .record-meta,.search-item-meta,.random-all-intro,.random-pick-available{
+        color:#b6aba3 !important
+      }
+      select,input[type="search"],input[type="email"],input[type="password"],
+      input[type="text"],input[type="number"],textarea,
+      .admin-search,.auth-form input{
+        background:#211d1a !important;
+        color:#f3eee9 !important;
+        border-color:#51453e !important;
+      }
+      select:focus,input:focus,textarea:focus{
+        border-color:#c58956 !important;
+        box-shadow:0 0 0 3px rgba(224,160,95,.13) !important
+      }
+      ::placeholder{color:#8f847d;opacity:1}
+
+      /* 題型、按鈕 */
+      .seg-btn,.secondary-btn,.auth-close-btn,.admin-tab-btn,.admin-action-btn,
+      .analysis-sync-badge,.summary-lock-badge{
+        background:#211d1a !important;
+        color:#d8cec7 !important;
+        border-color:#51453e !important
+      }
+      .seg-btn.active,.tab-btn.active,.nav-btn.active{
+        background:#3b2b20 !important;
+        color:#f2c18f !important;
+        border-color:#75543c !important
+      }
+      .primary-btn{background:linear-gradient(135deg,#8d5b37,#5c3a28)}
+      .skip-btn{background:#3b321f;color:#f0c97d;border-color:#66552d}
+      .clear-skip-btn{background:#28211c;color:#d9b99f;border-color:#5d4c40}
+      .danger-btn{background:#3b2528;color:#f2a1aa;border-color:#704047}
+
+      /* 首頁進度與隨機抽題 */
+      .category-name,.record-title,.search-item-title,.random-pick-title{color:#eee6e0 !important}
+      .progress-track{background:#342e2a}
+      .random-all-card{background:linear-gradient(145deg,#211d1a,#1a1715) !important}
+      .random-count-btn{
+        background:#31261e;color:#e5b98f;border-color:#624a38
+      }
+      .random-count-btn:hover{background:#3c2d22;border-color:#896345}
+      .random-count-btn.tf{background:#1d302b;color:#9bd1b9;border-color:#3f6656}
+      .random-count-btn.tf:hover{background:#244036;border-color:#578670}
+      .random-draw-stats{background:#211d1a;color:#c5bbb4;border-color:#4a403a}
+
+      /* 題目 */
+      .question-card:before,.question-number{color:#b6a091}
+      .question-text{color:#f7f1ec}
+      .option-btn{
+        background:#211d1a;color:#eee6e0;border-color:#4a403a
+      }
+      .option-btn:hover{background:#28231f}
+      .option-btn.selected{background:#3b2b20;border-color:#9a6b47}
+      .option-btn.correct{background:#1d3429;color:#8bd4aa;border-color:#3d7957}
+      .option-btn.wrong{background:#3a2327;color:#f0a2aa;border-color:#82454e}
+      .option-key{background:#352a23;color:#e6b483}
+      .status.none{color:#c3b7ae;background:#29231f;border-color:#4c413a}
+      .status.ok{color:#8fd3ad;background:#1c3328;border-color:#3d6d51}
+      .status.bad{color:#f2a4ac;background:#3b2529;border-color:#754149}
+      .status.skip{color:#e7c378;background:#3a311f;border-color:#6b582e}
+      .question-practice-count.correct-count{background:#1e3329;color:#8fd1ac;border-color:#406c54}
+      .question-practice-count.wrong-count{background:#3b2529;color:#f0a0aa;border-color:#744149}
+
+      /* 作答結果與解析 */
+      .answer-panel{background:#1b1917 !important}
+      .answer-mascot{background:#29231e;border-color:#5d4c40;box-shadow:0 8px 18px rgba(0,0,0,.3)}
+      .answer-head{background:linear-gradient(90deg,#203735,#1d302f)}
+      .answer-result{color:#76d19e}
+      .answer-result.wrong{color:#f29aa3}
+      .answer-badge{background:#40371f;border-color:#716034;color:#f2cd82}
+      .analysis-list{background:#1d1a18 !important;border-color:#453c36}
+      .analysis-item{border-bottom-color:#3f3732}
+      .analysis-title{color:#c0e0e1}
+      .analysis-text{color:#c4cbc9}
+      .analysis-tag{background:#46391e;color:#efc56f}
+      .analysis-tag.correct{background:#1d372a;color:#8bd2a7}
+      .analysis-text.customized{background:#1c3129;color:#b9d9ce;border-color:#3c6555}
+      .analysis-tools{background:#1c2623;border-color:#3c5049}
+      .analysis-tools-note,.analysis-item-status{color:#aebbb7}
+      .analysis-editor,.analysis-bulk-editor{background:#2d291e;border-color:#65572f}
+      .analysis-editor-textarea,.analysis-bulk-textarea{background:#1d1a18;color:#e8e2dd;border-color:#665a38}
+      .analysis-bulk-section{background:#211d1a;border-color:#544933}
+      .analysis-bulk-label{color:#d5d9d7}
+      .analysis-bulk-summary{background:#241f1b;border-color:#51443c}
+      .analysis-cancel-btn,.analysis-bulk-cancel{background:#211d1a;color:#cbd1d4;border-color:#4b555b}
+      .analysis-reset-btn,.analysis-bulk-original{background:#3a2529;color:#f0a2ad;border-color:#70434a}
+      .summary-card{background:#241f1b !important}
+      .summary-title{color:#e6b584}
+      .summary-text{color:#d4cbc5}
+      .summary-text.customized{background:#1d2932;color:#b8d1e2;border-color:#49667a}
+      details{background:#211d1a;border-color:#4a403a}
+      summary{color:#d8c9bf}
+      .detail-body{color:#c5cecc}
+      .note.source{background:#1b302f;border-color:#365a58;color:#9dcaca}
+      .note.memory{background:#3a301c;border-color:#66552d;color:#e4c47e}
+      .note.correct{background:#3a2428;border-color:#6d3d45;color:#eea0a9}
+
+      /* AI 筆記與查詢 */
+      .ai-query-box{background:linear-gradient(145deg,#211d1a,#241e19);border-color:#4a4038}
+      .ai-query-title{color:#eaded5}
+      .ai-query-note{color:#b8ada6}
+      .ai-query-btn.chatgpt,.gemini-note-btn.chatgpt{background:#1b302c;color:#9ad0c1;border-color:#3b675a}
+      .ai-query-btn.gemini,.gemini-note-btn.gemini{background:#252a3e;color:#aebbe8;border-color:#4a567b}
+      .gemini-note-btn.copy-only{background:#2e281f;color:#d9c1a0;border-color:#5a4b36}
+      .gemini-note-card,.gemini-note-body{background:#1d1a18 !important;border-color:#453c36 !important}
+      .gemini-note-readonly{
+        background:repeating-linear-gradient(0deg,#1d211f 0,#1d211f 31px,#27302c 32px) !important;
+        color:#d4dce6 !important
+      }
+      .gemini-note-edit-unlocked{background:#393019;color:#e5c577;border-color:#6a572d}
+
+      /* 搜尋、紀錄、分頁 */
+      .tabs{background:#221e1b;border-color:#4a4038}
+      .tab-btn{color:#b7aca4}
+      .record-row{border-bottom-color:#3e3631}
+      .metric-value{color:#e1a774}
+
+      /* 底部導覽 */
+      .bottom-nav{
+        background:rgba(24,21,19,.94);
+        border-top-color:#403832;
+        box-shadow:0 -8px 24px rgba(0,0,0,.3)
+      }
+      .nav-btn{color:#a99d95}
+
+      /* 登入、同步、管理介面 */
+      .auth-dialog,.admin-dialog{background:#1b1917 !important;color:#eee6e0}
+      .auth-dialog-head{background:linear-gradient(145deg,#2a211b,#1b2a28) !important;border-bottom-color:#463b34 !important}
+      .auth-dialog-title{color:#f1e8e1}
+      .auth-dialog-sub{color:#b9aea7}
+      .auth-provider-btn{background:#1b312d;color:#8ec9bb;border-color:#3d6258}
+      .auth-divider{color:#958a83}.auth-divider:before,.auth-divider:after{background:#463d37}
+      .account-role-badge{background:#29231f;color:#c7bbb3;border-color:#4c413a}
+      .account-role-badge.admin{background:#1d3429;color:#8acfa9;border-color:#3b6b50}
+      .admin-open-btn{background:#1d3129;color:#9bcdb6;border-color:#406554}
+      .admin-role-help,.admin-privacy-note{background:#211d1a;color:#c1b7b0;border-color:#4a4038}
+      .admin-role-help.ok{background:#1d3229;color:#9dd0b8;border-color:#406753}
+      .admin-role-help.error{background:#3a2529;color:#eba4a8;border-color:#6b4146}
+      .admin-metric{background:#1d2924;border-color:#3e5148}
+      .admin-metric-label{color:#a8b2ad}.admin-metric-value{color:#d8e1dc}
+      .admin-table-wrap,.admin-table{background:#1d1a18;border-color:#403933;color:#ddd6d0}
+      .admin-table th{background:#25221f;color:#b4aaa3;border-bottom-color:#423a35}
+      .admin-table td{border-bottom-color:#39332f}
+      .admin-user-main{color:#dce2df}.admin-user-sub{color:#9ba19e}
+      .admin-role-pill{background:#292725;color:#b8bfbb}.admin-role-pill.admin{background:#1d3329;color:#8ac8a8}
+      .admin-ip{color:#9fb3a8}
+
+      /* 法規閱讀器：保留法規圖片原色，僅周邊介面轉深色 */
+      .law-entry-card,.law-reader-card,.law-chapter-shortcut-card,.law-catalog-jump-card{
+        background:#1d1a18 !important;border-color:#453c36 !important
+      }
+      .law-chapter-shortcut-title,.law-catalog-jump-title{color:#d9c7b8}
+      .law-chapter-shortcut-hint,.law-catalog-jump-hint,.law-catalog-info{color:#aaa099}
+      .law-chapter-btn{background:#29231f;color:#d6b99f;border-color:#58463a}
+      .law-chapter-btn.active{background:#463122;color:#f0bd8a;border-color:#855a3d}
+      .law-catalog-search,.law-catalog-select{background:#211d1a;color:#eee8e3;border-color:#4c423c}
+      .law-catalog-go-btn{background:#1d3127;color:#9fd0b0;border-color:#42634e}
+      .law-catalog-info{background:#211d1a}
+      .law-page-wrap,.law-canvas-wrap{background:#2a2724 !important;border-color:#4a423c !important}
+      .law-page-image{box-shadow:0 8px 28px rgba(0,0,0,.45)}
+
+      /* Toast */
+      .toast{background:#2e211a;color:#fff4ec;box-shadow:0 10px 24px rgba(0,0,0,.4)}
+    }
+
   </style>
 </head>
 <body>
@@ -2343,7 +2591,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">V23.2.9.7 AI筆記＋隨機三抽不重複版</div>
+          <div class="brand-sub">V23.2.9.8 AI筆記＋iPad自動深色模式版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -5104,10 +5352,10 @@ init();
 setupLawReader();
 applyQuestionLawDeepLink();
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
-  navigator.serviceWorker.register("./sw.js?v=23.2.9.7").catch(()=>{})
+  navigator.serviceWorker.register("./sw.js?v=23.2.9.8").catch(()=>{})
 }
 </script>
 <script src="./firebase-config.js"></script>
-<script type="module" src="./firebase-sync.js?v=23.2.9.7"></script>
+<script type="module" src="./firebase-sync.js?v=23.2.9.8"></script>
 </body>
 </html>
