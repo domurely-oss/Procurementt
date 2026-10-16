@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <script>
-    // V23.2.9.12：支援「跟隨系統／一般模式／深色模式」手動切換
+    // V23.2.9.13：支援「跟隨系統／一般模式／深色模式」手動切換
     (()=>{
       const KEY="procurement_theme_mode_v1";
       const media=window.matchMedia?.("(prefers-color-scheme: dark)");
@@ -2602,7 +2602,7 @@
     
 
     /* =========================================================
-       V23.2.9.12 各章節未作答題目
+       V23.2.9.13 各章節未作答題目
        ========================================================= */
     .category-unanswered-bar{
       display:flex;
@@ -2762,7 +2762,7 @@
   
 
 
-    /* V23.2.9.12 手動外觀切換 */
+    /* V23.2.9.13 手動外觀切換 */
     .theme-open-btn{display:grid;place-items:center;font-size:18px;font-weight:900}
     .theme-sheet{
       position:fixed;inset:0;z-index:1200;display:flex;align-items:flex-end;justify-content:center;
@@ -2806,6 +2806,80 @@
       .theme-choice-btn .theme-label{font-size:12px}
       .theme-choice-btn .theme-sub{font-size:9px}
     }
+
+
+    /* =========================================================
+       V23.2.9.13 收藏／錯題重練獨立版面
+       ========================================================= */
+    .review-entry-card{margin-top:14px}
+    .review-entry-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}
+    .review-entry-title{font-size:16px;font-weight:950;color:var(--ink)}
+    .review-entry-note{margin-top:5px;color:var(--muted);font-size:11px;line-height:1.7}
+    .review-entry-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .review-entry-btn{border:1px solid var(--line);border-radius:16px;background:var(--surface2);color:var(--ink);padding:15px;text-align:left;cursor:pointer;min-height:88px;transition:.16s ease;touch-action:manipulation}
+    .review-entry-btn:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(74,47,31,.08)}
+    .review-entry-btn strong{display:block;font-size:15px;margin-bottom:6px}
+    .review-entry-btn span{display:block;font-size:11px;color:var(--muted);line-height:1.55}
+    .review-entry-btn.favorite strong{color:#9a672d}
+    .review-entry-btn.wrong strong{color:#b04a4a}
+
+    .review-page-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+    .review-back-btn{border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font-weight:850;padding:9px 13px;cursor:pointer;touch-action:manipulation}
+    .review-page-card{margin-top:14px}
+    .review-mode-tabs,.review-type-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+    .review-tab-btn,.review-type-btn{border:1px solid var(--line);border-radius:13px;background:var(--surface2);color:var(--muted);font-weight:900;padding:11px 10px;cursor:pointer;touch-action:manipulation}
+    .review-tab-btn.active,.review-type-btn.active{background:var(--brown);border-color:var(--brown);color:#fff}
+    .review-page-summary{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;margin:13px 0 10px;padding:11px 13px;border:1px solid var(--line);border-radius:13px;background:var(--surface2);color:var(--muted);font-size:11px;line-height:1.6}
+    .review-page-summary strong{color:var(--ink)}
+    .review-global-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px}
+    .review-global-start,.review-global-random{border:0;border-radius:13px;padding:12px 10px;font-weight:900;cursor:pointer;touch-action:manipulation}
+    .review-global-start{background:var(--brown);color:#fff}
+    .review-global-random{background:var(--mint);color:var(--ink);border:1px solid var(--line)}
+    .review-global-start:disabled,.review-global-random:disabled{opacity:.45;cursor:not-allowed}
+
+    .review-category-list{display:grid;gap:11px}
+    .review-category-group{border:1px solid var(--line);border-radius:16px;background:var(--surface);overflow:hidden}
+    .review-category-summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;cursor:pointer;touch-action:manipulation}
+    .review-category-summary::-webkit-details-marker{display:none}
+    .review-category-summary::after{content:'＋';font-size:19px;font-weight:800;color:var(--muted);flex:0 0 auto}
+    .review-category-group[open]>.review-category-summary::after{content:'－'}
+    .review-category-name{font-weight:950;color:var(--ink);line-height:1.45}
+    .review-category-count{margin-top:3px;color:var(--muted);font-size:10px}
+    .review-category-body{padding:0 12px 12px;border-top:1px solid var(--line)}
+    .review-category-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:10px 0}
+    .review-category-start,.review-category-random{border:1px solid var(--line);border-radius:11px;background:var(--surface2);color:var(--ink);padding:9px 8px;font-size:11px;font-weight:850;cursor:pointer;touch-action:manipulation}
+    .review-category-start{background:var(--mint)}
+    .review-category-questions{display:grid;gap:8px}
+    .review-question-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start;padding:11px;border:1px solid var(--line);border-radius:13px;background:var(--surface2)}
+    .review-question-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:5px}
+    .review-question-no{font-size:10px;font-weight:950;color:var(--brown)}
+    .review-question-text{font-size:12px;line-height:1.65;color:var(--ink)}
+    .review-question-stats{margin-top:6px;font-size:10px;line-height:1.6;color:var(--muted)}
+    .review-question-actions{display:grid;gap:6px;min-width:86px}
+    .review-open-btn,.review-remove-btn{border:1px solid var(--line);border-radius:10px;padding:8px 9px;font-size:10px;font-weight:900;cursor:pointer;touch-action:manipulation}
+    .review-open-btn{background:var(--brown);border-color:var(--brown);color:#fff}
+    .review-remove-btn{background:var(--surface);color:var(--muted)}
+    .review-empty{padding:28px 15px;text-align:center;border:1px dashed var(--line);border-radius:15px;background:var(--surface2);color:var(--muted);font-size:12px;line-height:1.8}
+    .review-mode-badge{display:inline-flex;align-items:center;border:1px solid #b28a55;border-radius:999px;background:#fff4df;color:#835c28;padding:5px 9px;font-size:10px;font-weight:900;margin-bottom:6px}
+    .review-mode-badge.wrong{border-color:#c98585;background:#fff0f0;color:#a63f3f}
+
+    html[data-effective-theme="dark"] .review-entry-btn,
+    html[data-effective-theme="dark"] .review-category-group,
+    html[data-effective-theme="dark"] .review-question-item,
+    html[data-effective-theme="dark"] .review-page-summary,
+    html[data-effective-theme="dark"] .review-empty{
+      background:#1d1a18;border-color:#453c36;color:#f3eee9
+    }
+    html[data-effective-theme="dark"] .review-category-body{border-color:#453c36}
+    html[data-effective-theme="dark"] .review-mode-badge{background:#3b3020;border-color:#7a633f;color:#e7c991}
+    html[data-effective-theme="dark"] .review-mode-badge.wrong{background:#3a2224;border-color:#7c484d;color:#f2a0a5}
+
+    @media(max-width:640px){
+      .review-entry-grid,.review-global-actions,.review-category-actions{grid-template-columns:1fr}
+      .review-question-item{grid-template-columns:1fr}
+      .review-question-actions{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}
+    }
+
 </style>
 </head>
 <body>
@@ -2819,7 +2893,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">V23.2.9.12 AI筆記＋iPhone／iPad手動外觀版</div>
+          <div class="brand-sub">V23.2.9.13 AI筆記＋iPhone／iPad手動外觀版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -3087,6 +3161,39 @@
     </section>
 
 
+
+    <section id="reviewView" class="view">
+      <div class="review-page-top">
+        <button class="review-back-btn" type="button" onclick="showView('recordView')">← 返回學習紀錄</button>
+      </div>
+      <div class="hero">
+        <small>FAVORITES & WRONG ANSWERS</small>
+        <h1>收藏與錯題重練</h1>
+        <p>收藏題目與曾答錯題目獨立整理，並依各章主題歸類，可逐章複習或一次重練全部題目。</p>
+      </div>
+
+      <div class="card review-page-card">
+        <div class="review-mode-tabs" id="reviewModeTabs">
+          <button class="review-tab-btn active" type="button" data-review-mode="favorite">★ 我的收藏</button>
+          <button class="review-tab-btn" type="button" data-review-mode="wrong">✕ 錯題重練</button>
+        </div>
+
+        <div class="review-type-tabs" id="reviewTypeTabs">
+          <button class="review-type-btn active" type="button" data-review-type="choice">選擇題</button>
+          <button class="review-type-btn" type="button" data-review-type="true_false">是非題</button>
+        </div>
+
+        <div class="review-page-summary" id="reviewSummary"></div>
+
+        <div class="review-global-actions">
+          <button class="review-global-start" id="reviewStartBtn" type="button">練習全部收藏題目</button>
+          <button class="review-global-random" id="reviewShuffleBtn" type="button">隨機練習</button>
+        </div>
+
+        <div class="review-category-list" id="reviewList"></div>
+      </div>
+    </section>
+
     <section id="recordView" class="view">
       <div class="hero">
         <small>LEARNING RECORDS</small>
@@ -3099,34 +3206,24 @@
       </div>
       <div id="recordMetrics" class="metrics"></div>
 
-      <div class="card review-hub-card" id="reviewHubCard">
-        <div class="review-hub-head">
+
+      <div class="card review-entry-card" id="reviewEntryCard">
+        <div class="review-entry-head">
           <div>
-            <div class="review-hub-title">★ 收藏題目與錯題重練</div>
-            <div class="review-hub-note">收藏題目可集中複習；錯題重練會列出「曾經答錯過」的題目。上方題型切換會同步套用到此區。</div>
+            <div class="review-entry-title">★ 收藏與錯題重練</div>
+            <div class="review-entry-note">已改為獨立版面，收藏題目與錯題會依各章主題分組顯示。</div>
           </div>
         </div>
-        <div class="review-mode-tabs" id="reviewModeTabs">
-          <button class="review-tab-btn active" type="button" data-review-mode="favorite">★ 我的收藏</button>
-          <button class="review-tab-btn" type="button" data-review-mode="wrong">✕ 錯題重練</button>
+        <div class="review-entry-grid">
+          <button class="review-entry-btn favorite" type="button" onclick="openReviewView('favorite')">
+            <strong>★ 我的收藏</strong>
+            <span id="reviewFavoriteCount">共 0 題收藏</span>
+          </button>
+          <button class="review-entry-btn wrong" type="button" onclick="openReviewView('wrong')">
+            <strong>✕ 錯題重練</strong>
+            <span id="reviewWrongCount">共 0 題錯題</span>
+          </button>
         </div>
-        <div class="review-controls">
-          <label class="field">章節篩選
-            <select id="reviewCategorySelect"></select>
-          </label>
-          <label class="field">排列方式
-            <select id="reviewOrderSelect">
-              <option value="number">依原題號</option>
-              <option value="category">依章節</option>
-            </select>
-          </label>
-        </div>
-        <div class="review-actions">
-          <button class="review-start-btn" id="reviewStartBtn" type="button">開始練習全部收藏題目</button>
-          <button class="review-shuffle-btn" id="reviewShuffleBtn" type="button">隨機練習</button>
-        </div>
-        <div class="review-summary" id="reviewSummary"></div>
-        <div class="review-list" id="reviewList"></div>
       </div>
       <div class="card" id="recordCategories"></div>
 
@@ -3827,8 +3924,8 @@ let practiceScope="all";
 let searchType="all";
 let recordType="choice";
 let reviewMode="favorite";
+let reviewType="choice";
 let reviewCategory="all";
-let reviewOrder="number";
 let selectedAnswer=null;
 let answered=false;
 
@@ -3863,6 +3960,7 @@ function showView(id){
   window.scrollTo({top:0,behavior:"smooth"});
   if(id==="homeView")renderHome();
   if(id==="recordView")renderRecords();
+  if(id==="reviewView")renderReviewHub();
   if(id==="searchView")runSearch();
   if(id==="lawView")renderLawReader();
   if(id==="practiceView")renderQuestion();
@@ -5631,7 +5729,7 @@ function skipQuestion(){
     toast(randomCompletion
       ?`本題已略過，第 ${randomCompletion.drawNo} 次隨機抽題完成`
       :`本題已略過，${practiceCompletionText()}`);
-    setTimeout(()=>showView("recordView"),450);
+    setTimeout(()=>showView(practiceReturnView()),450);
     return
   }
 
@@ -5649,7 +5747,7 @@ function nextQuestion(){
     toast(randomCompletion
       ?`第 ${randomCompletion.drawNo} 次隨機抽題已完成`
       :practiceCompletionText());
-    showView("recordView");return
+    showView(practiceReturnView());return
   }
   session.index++;saveSession();renderQuestion();window.scrollTo({top:0,behavior:"smooth"})
 }
@@ -5662,6 +5760,7 @@ function toggleFavorite(){
   const p=questionProgress(q);
   progress[q.id]={...p,favorite:!p.favorite,updatedAtMs:Date.now()};
   saveProgress();$("favoriteBtn").textContent=progress[q.id].favorite?"★ 已收藏":"☆ 收藏";
+  renderReviewHub();
   toast(progress[q.id].favorite?"已加入收藏":"已取消收藏")
 }
 
@@ -5693,27 +5792,26 @@ function runSearch(){
 }
 
 
-function reviewQuestions(mode=reviewMode){
-  let qs=QUESTIONS.filter(q=>q.type===recordType);
+
+function reviewQuestionPool(mode=reviewMode,type=reviewType,category="all"){
+  let qs=QUESTIONS.filter(q=>q.type===type);
   if(mode==="favorite")qs=qs.filter(q=>Boolean(questionProgress(q).favorite));
   else qs=qs.filter(q=>Number(questionProgress(q).wrong||0)>0);
-
-  if(reviewCategory!=="all")qs=qs.filter(q=>q.category===reviewCategory);
-
-  if(reviewOrder==="category"){
-    qs.sort((a,b)=>{
-      const ca=CATEGORIES.indexOf(a.category),cb=CATEGORIES.indexOf(b.category);
-      if(ca!==cb)return ca-cb;
-      return Number(a.number)-Number(b.number)
-    })
-  }else{
-    qs.sort((a,b)=>Number(a.number)-Number(b.number))
-  }
-  return qs
+  if(category!=="all")qs=qs.filter(q=>q.category===category);
+  return qs.sort((a,b)=>{
+    const ca=CATEGORIES.indexOf(a.category),cb=CATEGORIES.indexOf(b.category);
+    if(ca!==cb)return ca-cb;
+    return Number(a.number)-Number(b.number)
+  })
 }
 
 function reviewModeLabel(mode=reviewMode){
   return mode==="favorite"?"收藏題目":"錯題重練"
+}
+
+function openReviewView(mode="favorite"){
+  reviewMode=mode==="wrong"?"wrong":"favorite";
+  showView("reviewView")
 }
 
 function setupReviewHub(){
@@ -5724,22 +5822,18 @@ function setupReviewHub(){
     const btn=event.target.closest("[data-review-mode]");
     if(!btn)return;
     reviewMode=btn.dataset.reviewMode==="wrong"?"wrong":"favorite";
-    document.querySelectorAll("[data-review-mode]").forEach(x=>x.classList.toggle("active",x.dataset.reviewMode===reviewMode));
     renderReviewHub()
   });
 
-  $("reviewCategorySelect")?.addEventListener("change",event=>{
-    reviewCategory=event.target.value||"all";
+  $("reviewTypeTabs")?.addEventListener("click",event=>{
+    const btn=event.target.closest("[data-review-type]");
+    if(!btn)return;
+    reviewType=btn.dataset.reviewType==="true_false"?"true_false":"choice";
     renderReviewHub()
   });
 
-  $("reviewOrderSelect")?.addEventListener("change",event=>{
-    reviewOrder=event.target.value==="category"?"category":"number";
-    renderReviewHub()
-  });
-
-  $("reviewStartBtn")?.addEventListener("click",()=>startReviewPractice(reviewMode,false));
-  $("reviewShuffleBtn")?.addEventListener("click",()=>startReviewPractice(reviewMode,true));
+  $("reviewStartBtn")?.addEventListener("click",()=>startReviewPractice(reviewMode,false,"all"));
+  $("reviewShuffleBtn")?.addEventListener("click",()=>startReviewPractice(reviewMode,true,"all"));
 
   $("reviewList")?.addEventListener("click",event=>{
     const open=event.target.closest("[data-review-open]");
@@ -5747,6 +5841,19 @@ function setupReviewHub(){
       startReviewSingle(open.dataset.reviewOpen,open.dataset.reviewMode||reviewMode);
       return
     }
+
+    const catStart=event.target.closest("[data-review-category-start]");
+    if(catStart){
+      startReviewPractice(reviewMode,false,catStart.dataset.reviewCategoryStart);
+      return
+    }
+
+    const catRandom=event.target.closest("[data-review-category-random]");
+    if(catRandom){
+      startReviewPractice(reviewMode,true,catRandom.dataset.reviewCategoryRandom);
+      return
+    }
+
     const remove=event.target.closest("[data-review-unfavorite]");
     if(remove){
       const q=QMAP.get(remove.dataset.reviewUnfavorite);
@@ -5754,6 +5861,7 @@ function setupReviewHub(){
       const p=questionProgress(q);
       progress[q.id]={...p,favorite:false,updatedAtMs:Date.now()};
       saveProgress();
+      renderReviewHub();
       renderRecords();
       toast("已取消收藏")
     }
@@ -5763,81 +5871,93 @@ function setupReviewHub(){
 }
 
 function renderReviewHub(){
-  const categorySelect=$("reviewCategorySelect");
+  const favoriteTotal=QUESTIONS.filter(q=>Boolean(questionProgress(q).favorite)).length;
+  const wrongTotal=QUESTIONS.filter(q=>Number(questionProgress(q).wrong||0)>0).length;
+
+  if($("reviewFavoriteCount"))$("reviewFavoriteCount").textContent=`共 ${favoriteTotal.toLocaleString()} 題收藏`;
+  if($("reviewWrongCount"))$("reviewWrongCount").textContent=`共 ${wrongTotal.toLocaleString()} 題錯題`;
+
   const list=$("reviewList");
-  if(!categorySelect||!list)return;
-
-  const availableCategories=CATEGORIES.filter(cat=>{
-    const candidates=QUESTIONS.filter(q=>q.type===recordType&&q.category===cat);
-    return reviewMode==="favorite"
-      ?candidates.some(q=>Boolean(questionProgress(q).favorite))
-      :candidates.some(q=>Number(questionProgress(q).wrong||0)>0)
-  });
-
-  if(reviewCategory!=="all"&&!availableCategories.includes(reviewCategory))reviewCategory="all";
-
-  categorySelect.innerHTML=`<option value="all">全部章節</option>`+
-    availableCategories.map(cat=>`<option value="${esc(cat)}">${esc(cat)}</option>`).join("");
-  categorySelect.value=reviewCategory;
-  $("reviewOrderSelect").value=reviewOrder;
+  const summary=$("reviewSummary");
+  if(!list||!summary)return;
 
   document.querySelectorAll("[data-review-mode]").forEach(x=>x.classList.toggle("active",x.dataset.reviewMode===reviewMode));
+  document.querySelectorAll("[data-review-type]").forEach(x=>x.classList.toggle("active",x.dataset.reviewType===reviewType));
 
-  const qs=reviewQuestions();
-  const totalAll=QUESTIONS.filter(q=>q.type===recordType).filter(q=>reviewMode==="favorite"
-    ?Boolean(questionProgress(q).favorite)
-    :Number(questionProgress(q).wrong||0)>0).length;
-
+  const qs=reviewQuestionPool(reviewMode,reviewType,"all");
   const label=reviewModeLabel();
-  const catText=reviewCategory==="all"?"全部章節":reviewCategory;
-  $("reviewSummary").innerHTML=`<span><strong>${label}</strong>・${labelType(recordType)}・${esc(catText)}</span><span>顯示 ${qs.length.toLocaleString()} 題／本題型共 ${totalAll.toLocaleString()} 題</span>`;
+  const grouped=CATEGORIES.map(cat=>({cat,items:qs.filter(q=>q.category===cat)})).filter(group=>group.items.length);
+
+  summary.innerHTML=`<span><strong>${label}</strong>・${labelType(reviewType)}</span><span>共 ${qs.length.toLocaleString()} 題・分布 ${grouped.length.toLocaleString()} 個章節</span>`;
 
   const startBtn=$("reviewStartBtn");
   const shuffleBtn=$("reviewShuffleBtn");
-  startBtn.disabled=qs.length===0;
-  shuffleBtn.disabled=qs.length===0;
-  startBtn.textContent=reviewMode==="favorite"?"開始練習全部收藏題目":"開始重練全部錯題";
-  shuffleBtn.textContent=reviewMode==="favorite"?"隨機練習收藏題目":"隨機重練錯題";
+  if(startBtn){
+    startBtn.disabled=qs.length===0;
+    startBtn.textContent=reviewMode==="favorite"?"練習全部收藏題目":"重練全部錯題"
+  }
+  if(shuffleBtn){
+    shuffleBtn.disabled=qs.length===0;
+    shuffleBtn.textContent=reviewMode==="favorite"?"隨機練習收藏題目":"隨機重練錯題"
+  }
 
   if(!qs.length){
     list.innerHTML=`<div class="review-empty">${reviewMode==="favorite"
-      ?"目前這個題型／章節還沒有收藏題目。練習時按「☆ 收藏」即可加入。"
-      :"目前這個題型／章節沒有曾答錯的題目。"}</div>`;
+      ?`目前${labelType(reviewType)}還沒有收藏題目。練習時按「☆ 收藏」即可加入。`
+      :`目前${labelType(reviewType)}沒有曾經答錯的題目。`}</div>`;
     return
   }
 
-  list.innerHTML=qs.map(q=>{
-    const p=questionProgress(q);
-    const last=p.attempts?`最近一次：${p.lastCorrect?"答對":"答錯"}`:"尚未正式作答";
-    const actionText=reviewMode==="favorite"?"練習本題":"重練本題";
-    return `<div class="review-question-item">
-      <div class="review-question-main">
-        <div class="review-question-top">
-          <span class="review-question-no">${labelType(q.type)} 第 ${esc(q.number)} 題</span>
-          <span class="review-question-category">${esc(q.category)}</span>
+  list.innerHTML=grouped.map((group,index)=>{
+    const questionHtml=group.items.map(q=>{
+      const p=questionProgress(q);
+      const last=Number(p.attempts||0)>0?`最近一次：${p.lastCorrect?"答對":"答錯"}`:"尚未正式作答";
+      const actionText=reviewMode==="favorite"?"練習本題":"重練本題";
+      return `<div class="review-question-item">
+        <div class="review-question-main">
+          <div class="review-question-top">
+            <span class="review-question-no">${labelType(q.type)} 第 ${esc(q.number)} 題</span>
+          </div>
+          <div class="review-question-text">${esc(q.question)}</div>
+          <div class="review-question-stats">答對 ${Number(p.correct||0)} 次・答錯 ${Number(p.wrong||0)} 次・${last}${p.favorite?"・★ 已收藏":""}</div>
         </div>
-        <div class="review-question-text">${esc(q.question)}</div>
-        <div class="review-question-stats">答對 ${Number(p.correct||0)} 次・答錯 ${Number(p.wrong||0)} 次・${last}${p.favorite?"・★ 已收藏":""}</div>
+        <div class="review-question-actions">
+          <button class="review-open-btn" type="button" data-review-open="${esc(q.id)}" data-review-mode="${reviewMode}">${actionText}</button>
+          ${reviewMode==="favorite"?`<button class="review-remove-btn" type="button" data-review-unfavorite="${esc(q.id)}">取消收藏</button>`:""}
+        </div>
+      </div>`
+    }).join("");
+
+    return `<details class="review-category-group" ${index===0?"open":""}>
+      <summary class="review-category-summary">
+        <div>
+          <div class="review-category-name">${esc(group.cat)}</div>
+          <div class="review-category-count">${labelType(reviewType)}・${group.items.length.toLocaleString()} 題</div>
+        </div>
+      </summary>
+      <div class="review-category-body">
+        <div class="review-category-actions">
+          <button class="review-category-start" type="button" data-review-category-start="${esc(group.cat)}">${reviewMode==="favorite"?"練習本章收藏":"重練本章錯題"}</button>
+          <button class="review-category-random" type="button" data-review-category-random="${esc(group.cat)}">隨機本章</button>
+        </div>
+        <div class="review-category-questions">${questionHtml}</div>
       </div>
-      <div class="review-question-actions">
-        <button class="review-open-btn" type="button" data-review-open="${esc(q.id)}" data-review-mode="${reviewMode}">${actionText}</button>
-        ${reviewMode==="favorite"?`<button class="review-remove-btn" type="button" data-review-unfavorite="${esc(q.id)}">取消收藏</button>`:""}
-      </div>
-    </div>`
+    </details>`
   }).join("")
 }
 
-function startReviewPractice(mode=reviewMode,randomize=false){
+function startReviewPractice(mode=reviewMode,randomize=false,category="all"){
   reviewMode=mode==="wrong"?"wrong":"favorite";
-  let ids=reviewQuestions(reviewMode).map(q=>q.id);
+  reviewCategory=category||"all";
+  let ids=reviewQuestionPool(reviewMode,reviewType,reviewCategory).map(q=>q.id);
   if(randomize)ids=shuffle(ids);
   if(!ids.length){toast(reviewMode==="favorite"?"目前沒有收藏題目":"目前沒有錯題可以重練");return}
 
   session={
     category:reviewMode==="favorite"?"我的收藏":"錯題重練",
-    type:recordType,
+    type:reviewType,
     scope:reviewMode==="favorite"?"favorite_review":"wrong_review",
-    order:randomize?"random":reviewOrder,
+    order:randomize?"random":"category",
     reviewCategory,
     ids,
     index:0
@@ -5848,6 +5968,8 @@ function startReviewPractice(mode=reviewMode,randomize=false){
 function startReviewSingle(id,mode=reviewMode){
   const q=QMAP.get(id);if(!q)return;
   reviewMode=mode==="wrong"?"wrong":"favorite";
+  reviewType=q.type;
+  reviewCategory=q.category;
   session={
     category:reviewMode==="favorite"?"我的收藏":"錯題重練",
     type:q.type,
@@ -5864,6 +5986,11 @@ function practiceReviewMeta(){
   if(session?.scope==="favorite_review")return `<span class="review-mode-badge">★ 收藏題目複習</span><br>`;
   if(session?.scope==="wrong_review")return `<span class="review-mode-badge wrong">✕ 錯題重練</span><br>`;
   return ""
+}
+
+function practiceReturnView(){
+  if(session?.scope==="favorite_review"||session?.scope==="wrong_review")return "reviewView";
+  return "recordView"
 }
 
 function practiceCompletionText(){
@@ -5951,6 +6078,7 @@ window.quizSyncBridge={
     localStorage.setItem(STORAGE_KEY,JSON.stringify(progress));
     renderHome();
     renderRecords();
+    if(document.getElementById("reviewView")?.classList.contains("active"))renderReviewHub();
     if(document.getElementById("searchView")?.classList.contains("active"))runSearch()
   },
   getSession:()=>session?JSON.parse(JSON.stringify(session)):null,
@@ -5966,11 +6094,11 @@ setupThemeControls();
 setupLawReader();
 applyQuestionLawDeepLink();
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
-  navigator.serviceWorker.register("./sw.js?v=23.2.9.12").catch(()=>{})
+  navigator.serviceWorker.register("./sw.js?v=23.2.9.13").catch(()=>{})
 }
 </script>
 <script src="./firebase-config.js"></script>
-<script type="module" src="./firebase-sync.js?v=23.2.9.12"></script>
+<script type="module" src="./firebase-sync.js?v=23.2.9.13"></script>
 <div class="theme-sheet hidden" id="themeSheet" aria-hidden="true">
   <div class="theme-panel" role="dialog" aria-modal="true" aria-labelledby="themePanelTitle">
     <div class="theme-panel-head">
