@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <script>
-    // V23.2.9.13：支援「跟隨系統／一般模式／深色模式」手動切換
+    // V23.2.9.14：支援「跟隨系統／一般模式／深色模式」手動切換
     (()=>{
       const KEY="procurement_theme_mode_v1";
       const media=window.matchMedia?.("(prefers-color-scheme: dark)");
@@ -31,7 +31,7 @@
         if(colorMeta)colorMeta.setAttribute("content",effective);
 
         const themeMeta=document.querySelector('meta[name="theme-color"]');
-        if(themeMeta)themeMeta.setAttribute("content",effective==="dark"?"#141210":"#744321");
+        if(themeMeta)themeMeta.setAttribute("content",effective==="dark"?"#11161b":"#744321");
 
         const status=document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
         if(status)status.setAttribute("content",effective==="dark"?"black-translucent":"default");
@@ -2602,7 +2602,7 @@
     
 
     /* =========================================================
-       V23.2.9.13 各章節未作答題目
+       V23.2.9.14 各章節未作答題目
        ========================================================= */
     .category-unanswered-bar{
       display:flex;
@@ -2762,7 +2762,7 @@
   
 
 
-    /* V23.2.9.13 手動外觀切換 */
+    /* V23.2.9.14 手動外觀切換 */
     .theme-open-btn{display:grid;place-items:center;font-size:18px;font-weight:900}
     .theme-sheet{
       position:fixed;inset:0;z-index:1200;display:flex;align-items:flex-end;justify-content:center;
@@ -2809,7 +2809,7 @@
 
 
     /* =========================================================
-       V23.2.9.13 收藏／錯題重練獨立版面
+       V23.2.9.14 收藏／錯題重練獨立版面
        ========================================================= */
     .review-entry-card{margin-top:14px}
     .review-entry-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}
@@ -2880,6 +2880,428 @@
       .review-question-actions{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}
     }
 
+
+
+    /* =========================================================
+       V23.2.9.14 舒適深色模式
+       中性藍灰底＋低飽和暖色點綴，降低長時間閱讀疲勞。
+       ========================================================= */
+    html[data-effective-theme="dark"]{
+      --bg:#11161b;
+      --surface:#181e24;
+      --surface2:#20272f;
+      --ink:#e9edf2;
+      --muted:#a8b1bc;
+      --line:#303a45;
+      --brown:#b9805d;
+      --brown2:#d19a70;
+      --orange:#d7a06f;
+      --teal:#69b8b4;
+      --mint:#1a2e2d;
+      --mint2:#1d3433;
+      --ok:#78c99b;
+      --bad:#e58f9a;
+      --warn:#d5b16f;
+      --gold:#67563b;
+      --shadow:0 16px 38px rgba(0,0,0,.30);
+    }
+
+    html[data-effective-theme="dark"] body{
+      color:#e9edf2;
+      background-color:#11161b;
+      background-image:
+        radial-gradient(circle,rgba(148,166,184,.055) 1px,transparent 1.1px),
+        linear-gradient(180deg,rgba(255,255,255,.008),rgba(255,255,255,.008));
+    }
+
+    /* 頂端：由偏紅棕改為柔和石墨藍灰 */
+    html[data-effective-theme="dark"] .topbar{
+      background:linear-gradient(180deg,#1b2229,#14191f) !important;
+      border-bottom-color:#2d3741 !important;
+      box-shadow:0 8px 22px rgba(0,0,0,.28) !important;
+    }
+    html[data-effective-theme="dark"] .brand-mark{
+      background:#232c34 !important;
+      color:#ddb083 !important;
+      border-color:#3c4853 !important;
+    }
+    html[data-effective-theme="dark"] .brand-sub{color:#abb5bf !important}
+    html[data-effective-theme="dark"] .icon-btn{
+      background:#242c34 !important;
+      border-color:#3b4651 !important;
+      color:#e6ebef !important;
+    }
+    html[data-effective-theme="dark"] .icon-btn:hover{background:#2a343d !important}
+
+    html[data-effective-theme="dark"] .hero{
+      background:linear-gradient(138deg,#2a3640 0%,#212a32 56%,#181e24 100%) !important;
+      box-shadow:0 16px 38px rgba(0,0,0,.28) !important;
+    }
+    html[data-effective-theme="dark"] .hero small,
+    html[data-effective-theme="dark"] .chip{
+      background:rgba(255,255,255,.065) !important;
+      border-color:rgba(255,255,255,.115) !important;
+    }
+    html[data-effective-theme="dark"] .practice-title{color:#edf1f4 !important}
+    html[data-effective-theme="dark"] .practice-title span:after{background:#556471 !important}
+    html[data-effective-theme="dark"] .section-title,
+    html[data-effective-theme="dark"] .analysis-heading{color:#add8d7 !important}
+
+    /* 卡片：降低黑白反差，讓章節之間仍保有層次 */
+    html[data-effective-theme="dark"] .card,
+    html[data-effective-theme="dark"] .category-row,
+    html[data-effective-theme="dark"] .question-card,
+    html[data-effective-theme="dark"] .search-item,
+    html[data-effective-theme="dark"] .metric,
+    html[data-effective-theme="dark"] .summary-card,
+    html[data-effective-theme="dark"] .analysis-list,
+    html[data-effective-theme="dark"] .answer-panel,
+    html[data-effective-theme="dark"] .random-pick-group,
+    html[data-effective-theme="dark"] .law-reader-card,
+    html[data-effective-theme="dark"] .law-entry-card,
+    html[data-effective-theme="dark"] .law-chapter-shortcut-card,
+    html[data-effective-theme="dark"] .law-catalog-jump-card,
+    html[data-effective-theme="dark"] .sync-card,
+    html[data-effective-theme="dark"] .auth-user-card,
+    html[data-effective-theme="dark"] .review-category-group,
+    html[data-effective-theme="dark"] .review-question-item,
+    html[data-effective-theme="dark"] .review-entry-btn,
+    html[data-effective-theme="dark"] .review-page-summary,
+    html[data-effective-theme="dark"] .review-empty{
+      background:#181e24 !important;
+      border-color:#303a45 !important;
+      box-shadow:0 9px 24px rgba(0,0,0,.20) !important;
+    }
+
+    html[data-effective-theme="dark"] label.field,
+    html[data-effective-theme="dark"] .quiz-meta,
+    html[data-effective-theme="dark"] .category-count,
+    html[data-effective-theme="dark"] .progress-meta,
+    html[data-effective-theme="dark"] .metric-label,
+    html[data-effective-theme="dark"] .record-meta,
+    html[data-effective-theme="dark"] .search-item-meta,
+    html[data-effective-theme="dark"] .random-all-intro,
+    html[data-effective-theme="dark"] .random-pick-available,
+    html[data-effective-theme="dark"] .review-entry-note,
+    html[data-effective-theme="dark"] .review-page-summary,
+    html[data-effective-theme="dark"] .review-question-stats,
+    html[data-effective-theme="dark"] .review-category-count{
+      color:#a8b1bc !important;
+    }
+
+    /* 表單 */
+    html[data-effective-theme="dark"] select,
+    html[data-effective-theme="dark"] input[type="search"],
+    html[data-effective-theme="dark"] input[type="email"],
+    html[data-effective-theme="dark"] input[type="password"],
+    html[data-effective-theme="dark"] input[type="text"],
+    html[data-effective-theme="dark"] input[type="number"],
+    html[data-effective-theme="dark"] textarea,
+    html[data-effective-theme="dark"] .admin-search,
+    html[data-effective-theme="dark"] .auth-form input{
+      background:#20272f !important;
+      color:#e9edf2 !important;
+      border-color:#394550 !important;
+    }
+    html[data-effective-theme="dark"] select:focus,
+    html[data-effective-theme="dark"] input:focus,
+    html[data-effective-theme="dark"] textarea:focus{
+      border-color:#9f765b !important;
+      box-shadow:0 0 0 3px rgba(190,137,98,.14) !important;
+    }
+    html[data-effective-theme="dark"] ::placeholder{color:#788490 !important;opacity:1}
+
+    /* 一般按鈕 */
+    html[data-effective-theme="dark"] .seg-btn,
+    html[data-effective-theme="dark"] .secondary-btn,
+    html[data-effective-theme="dark"] .auth-close-btn,
+    html[data-effective-theme="dark"] .admin-tab-btn,
+    html[data-effective-theme="dark"] .admin-action-btn,
+    html[data-effective-theme="dark"] .analysis-sync-badge,
+    html[data-effective-theme="dark"] .summary-lock-badge,
+    html[data-effective-theme="dark"] .review-back-btn,
+    html[data-effective-theme="dark"] .review-category-start,
+    html[data-effective-theme="dark"] .review-category-random,
+    html[data-effective-theme="dark"] .review-remove-btn{
+      background:#20272f !important;
+      color:#c8d0d7 !important;
+      border-color:#394550 !important;
+    }
+    html[data-effective-theme="dark"] .seg-btn.active,
+    html[data-effective-theme="dark"] .tab-btn.active,
+    html[data-effective-theme="dark"] .nav-btn.active,
+    html[data-effective-theme="dark"] .review-tab-btn.active,
+    html[data-effective-theme="dark"] .review-type-btn.active{
+      background:#33404a !important;
+      color:#e3bd96 !important;
+      border-color:#586a79 !important;
+    }
+    html[data-effective-theme="dark"] .primary-btn,
+    html[data-effective-theme="dark"] .review-global-start,
+    html[data-effective-theme="dark"] .review-open-btn{
+      background:linear-gradient(135deg,#9b6d50,#78513d) !important;
+      color:#fff8f2 !important;
+      border-color:#9b6d50 !important;
+    }
+    html[data-effective-theme="dark"] .skip-btn{
+      background:#302b20 !important;color:#dfc783 !important;border-color:#5a5138 !important
+    }
+    html[data-effective-theme="dark"] .clear-skip-btn{
+      background:#24292e !important;color:#c9b6a6 !important;border-color:#414c55 !important
+    }
+    html[data-effective-theme="dark"] .danger-btn{
+      background:#35262b !important;color:#e9a4ad !important;border-color:#66424b !important
+    }
+
+    /* 首頁／隨機抽題 */
+    html[data-effective-theme="dark"] .category-name,
+    html[data-effective-theme="dark"] .record-title,
+    html[data-effective-theme="dark"] .search-item-title,
+    html[data-effective-theme="dark"] .random-pick-title,
+    html[data-effective-theme="dark"] .review-category-name,
+    html[data-effective-theme="dark"] .review-question-text{
+      color:#e5eaee !important;
+    }
+    html[data-effective-theme="dark"] .progress-track{background:#273039 !important}
+    html[data-effective-theme="dark"] .random-all-card{
+      background:linear-gradient(145deg,#1b2228,#151a1f) !important;
+      border-color:#303a45 !important;
+    }
+    html[data-effective-theme="dark"] .random-count-btn{
+      background:#2a3035 !important;color:#dfb48f !important;border-color:#4f5b64 !important
+    }
+    html[data-effective-theme="dark"] .random-count-btn:hover{background:#313a42 !important;border-color:#687784 !important}
+    html[data-effective-theme="dark"] .random-count-btn.tf{
+      background:#1b302f !important;color:#9fd2c9 !important;border-color:#355a57 !important
+    }
+    html[data-effective-theme="dark"] .random-count-btn.tf:hover{background:#213b39 !important;border-color:#47736e !important}
+    html[data-effective-theme="dark"] .random-draw-stats{
+      background:#20272f !important;color:#b5bec7 !important;border-color:#36414c !important
+    }
+
+    /* 題目與選項 */
+    html[data-effective-theme="dark"] .question-card:before,
+    html[data-effective-theme="dark"] .question-number{color:#9ba8b4 !important}
+    html[data-effective-theme="dark"] .question-text{color:#edf1f4 !important}
+    html[data-effective-theme="dark"] .option-btn{
+      background:#1d242b !important;
+      color:#e4e9ed !important;
+      border-color:#34404a !important;
+    }
+    html[data-effective-theme="dark"] .option-btn:hover{background:#252e36 !important}
+    html[data-effective-theme="dark"] .option-btn.selected{
+      background:#303943 !important;border-color:#8b6a52 !important
+    }
+    html[data-effective-theme="dark"] .option-btn.correct{
+      background:#1c3329 !important;color:#91d5ad !important;border-color:#3e7658 !important
+    }
+    html[data-effective-theme="dark"] .option-btn.wrong{
+      background:#35242a !important;color:#eda0aa !important;border-color:#754751 !important
+    }
+    html[data-effective-theme="dark"] .option-key{
+      background:#2e3438 !important;color:#dfb38b !important
+    }
+    html[data-effective-theme="dark"] .status.none{
+      color:#b8c0c7 !important;background:#232a31 !important;border-color:#39444e !important
+    }
+    html[data-effective-theme="dark"] .status.ok,
+    html[data-effective-theme="dark"] .question-practice-count.correct-count{
+      color:#91d0aa !important;background:#1b3027 !important;border-color:#3b6a50 !important
+    }
+    html[data-effective-theme="dark"] .status.bad,
+    html[data-effective-theme="dark"] .question-practice-count.wrong-count{
+      color:#eca0aa !important;background:#34242a !important;border-color:#69434b !important
+    }
+    html[data-effective-theme="dark"] .status.skip{
+      color:#dcc17b !important;background:#302b20 !important;border-color:#5e5436 !important
+    }
+
+    /* 答題結果與解析 */
+    html[data-effective-theme="dark"] .answer-panel{background:#171d22 !important}
+    html[data-effective-theme="dark"] .answer-mascot{
+      background:#222a31 !important;border-color:#3d4954 !important;box-shadow:0 8px 18px rgba(0,0,0,.25) !important
+    }
+    html[data-effective-theme="dark"] .answer-head{background:linear-gradient(90deg,#1c3332,#1b292c) !important}
+    html[data-effective-theme="dark"] .answer-result{color:#82cfa2 !important}
+    html[data-effective-theme="dark"] .answer-result.wrong{color:#e99aa5 !important}
+    html[data-effective-theme="dark"] .answer-badge{
+      background:#302d23 !important;border-color:#59513a !important;color:#ddc07b !important
+    }
+    html[data-effective-theme="dark"] .analysis-item{border-bottom-color:#303942 !important}
+    html[data-effective-theme="dark"] .analysis-title{color:#acd5d4 !important}
+    html[data-effective-theme="dark"] .analysis-text{color:#c8d0d5 !important}
+    html[data-effective-theme="dark"] .analysis-tag{background:#353021 !important;color:#dfbc72 !important}
+    html[data-effective-theme="dark"] .analysis-tag.correct{background:#1c3228 !important;color:#8fd0aa !important}
+    html[data-effective-theme="dark"] .analysis-tools{
+      background:#1b2929 !important;border-color:#344a49 !important
+    }
+    html[data-effective-theme="dark"] .analysis-tools-note,
+    html[data-effective-theme="dark"] .analysis-item-status{color:#a9b6b7 !important}
+    html[data-effective-theme="dark"] .analysis-editor,
+    html[data-effective-theme="dark"] .analysis-bulk-editor{
+      background:#242a2e !important;border-color:#4a5050 !important
+    }
+
+    /* AI 筆記 */
+    html[data-effective-theme="dark"] .ai-query-btn.chatgpt,
+    html[data-effective-theme="dark"] .gemini-note-btn.chatgpt{
+      background:#1a302d !important;color:#9bd0c1 !important;border-color:#386258 !important
+    }
+    html[data-effective-theme="dark"] .ai-query-btn.gemini,
+    html[data-effective-theme="dark"] .gemini-note-btn.gemini{
+      background:#222b3c !important;color:#b6c2e8 !important;border-color:#455578 !important
+    }
+    html[data-effective-theme="dark"] .gemini-note-btn.copy-only{
+      background:#292b2b !important;color:#ccb89f !important;border-color:#454d51 !important
+    }
+    html[data-effective-theme="dark"] .gemini-note-card,
+    html[data-effective-theme="dark"] .gemini-note-body{
+      background:#181e24 !important;border-color:#303a45 !important
+    }
+    html[data-effective-theme="dark"] .gemini-note-readonly{
+      background:repeating-linear-gradient(0deg,#1b2227 0,#1b2227 31px,#253038 32px) !important;
+      color:#d5dce3 !important;
+    }
+
+    /* 搜尋、紀錄與導覽 */
+    html[data-effective-theme="dark"] .tabs{background:#1c2329 !important;border-color:#35404a !important}
+    html[data-effective-theme="dark"] .tab-btn{color:#aab4bd !important}
+    html[data-effective-theme="dark"] .record-row{border-bottom-color:#303942 !important}
+    html[data-effective-theme="dark"] .metric-value{color:#d3a477 !important}
+    html[data-effective-theme="dark"] .bottom-nav{
+      background:rgba(19,24,29,.95) !important;
+      border-top-color:#303a44 !important;
+      box-shadow:0 -8px 22px rgba(0,0,0,.26) !important;
+    }
+    html[data-effective-theme="dark"] .nav-btn{color:#9faab4 !important}
+
+    /* 登入／管理 */
+    html[data-effective-theme="dark"] .auth-dialog,
+    html[data-effective-theme="dark"] .admin-dialog{
+      background:#171d22 !important;color:#e5eaee !important
+    }
+    html[data-effective-theme="dark"] .auth-dialog-head{
+      background:linear-gradient(145deg,#202830,#1a2928) !important;
+      border-bottom-color:#34404a !important;
+    }
+    html[data-effective-theme="dark"] .auth-dialog-title{color:#e7ecef !important}
+    html[data-effective-theme="dark"] .auth-dialog-sub{color:#aab4bd !important}
+    html[data-effective-theme="dark"] .auth-provider-btn{
+      background:#1a302d !important;color:#96cbbd !important;border-color:#365d55 !important
+    }
+    html[data-effective-theme="dark"] .admin-table-wrap,
+    html[data-effective-theme="dark"] .admin-table{
+      background:#181e24 !important;border-color:#303a45 !important;color:#d8dee3 !important
+    }
+    html[data-effective-theme="dark"] .admin-table th{
+      background:#20272e !important;color:#b3bdc5 !important;border-bottom-color:#35404a !important
+    }
+    html[data-effective-theme="dark"] .admin-table td{border-bottom-color:#2d3740 !important}
+
+    /* 法規閱讀器：圖片本身維持原色，周邊改為中性深色 */
+    html[data-effective-theme="dark"] .law-chapter-shortcut-title,
+    html[data-effective-theme="dark"] .law-catalog-jump-title{color:#d4c2b1 !important}
+    html[data-effective-theme="dark"] .law-chapter-shortcut-hint,
+    html[data-effective-theme="dark"] .law-catalog-jump-hint,
+    html[data-effective-theme="dark"] .law-catalog-info{color:#a6b0b8 !important}
+    html[data-effective-theme="dark"] .law-chapter-btn{
+      background:#222a31 !important;color:#d2b79d !important;border-color:#3e4a54 !important
+    }
+    html[data-effective-theme="dark"] .law-chapter-btn.active{
+      background:#35404a !important;color:#e4b88e !important;border-color:#667684 !important
+    }
+    html[data-effective-theme="dark"] .law-catalog-search,
+    html[data-effective-theme="dark"] .law-catalog-select{
+      background:#20272f !important;color:#e5e9ed !important;border-color:#38444f !important
+    }
+    html[data-effective-theme="dark"] .law-catalog-go-btn{
+      background:#1c3028 !important;color:#9bcbae !important;border-color:#3b5d49 !important
+    }
+    html[data-effective-theme="dark"] .law-catalog-info{background:#20272f !important}
+    html[data-effective-theme="dark"] .law-page-wrap,
+    html[data-effective-theme="dark"] .law-canvas-wrap{
+      background:#252c32 !important;border-color:#3b4650 !important
+    }
+
+    /* 未作答題目 */
+    html[data-effective-theme="dark"] .category-unanswered-count{color:#a8b2ba !important}
+    html[data-effective-theme="dark"] .category-unanswered-toggle{
+      background:#242b31 !important;color:#d9b99d !important;border-color:#3f4b55 !important
+    }
+    html[data-effective-theme="dark"] .category-unanswered-toggle:hover{
+      background:#2b343c !important;border-color:#596976 !important
+    }
+    html[data-effective-theme="dark"] .category-unanswered-toggle.done{
+      background:#1b3028 !important;color:#8fcba8 !important;border-color:#365d49 !important
+    }
+    html[data-effective-theme="dark"] .category-unanswered-panel{
+      background:#151b20 !important;border-color:#2f3942 !important
+    }
+    html[data-effective-theme="dark"] .unanswered-group-title{color:#b8c1c8 !important}
+    html[data-effective-theme="dark"] .unanswered-question-btn{
+      background:#20272e !important;color:#dce2e6 !important;border-color:#35414b !important
+    }
+    html[data-effective-theme="dark"] .unanswered-question-btn:hover{
+      background:#29333b !important;border-color:#60717e !important
+    }
+    html[data-effective-theme="dark"] .unanswered-question-btn.tf{
+      background:#1a2d2c !important;color:#9ecdc6 !important;border-color:#355653 !important
+    }
+    html[data-effective-theme="dark"] .unanswered-question-btn.skipped::after{
+      background:#332f23 !important;color:#d9b96f !important
+    }
+
+    /* 收藏／錯題獨立版面 */
+    html[data-effective-theme="dark"] .review-entry-btn:hover{
+      box-shadow:0 10px 24px rgba(0,0,0,.24) !important;
+      border-color:#44515d !important;
+    }
+    html[data-effective-theme="dark"] .review-entry-btn.favorite strong{color:#d5b075 !important}
+    html[data-effective-theme="dark"] .review-entry-btn.wrong strong{color:#e3969f !important}
+    html[data-effective-theme="dark"] .review-category-body{border-color:#303a45 !important}
+    html[data-effective-theme="dark"] .review-question-no{color:#c99670 !important}
+    html[data-effective-theme="dark"] .review-mode-badge{
+      background:#302d23 !important;border-color:#5c5238 !important;color:#dec17f !important
+    }
+    html[data-effective-theme="dark"] .review-mode-badge.wrong{
+      background:#342429 !important;border-color:#69434a !important;color:#eba0a8 !important
+    }
+    html[data-effective-theme="dark"] .review-global-random{
+      background:#1c302f !important;color:#b9d9d4 !important;border-color:#355452 !important
+    }
+
+    /* 外觀切換視窗 */
+    html[data-effective-theme="dark"] .theme-sheet{
+      background:rgba(7,10,13,.52) !important;
+    }
+    html[data-effective-theme="dark"] .theme-panel{
+      background:#181e24 !important;
+      border-color:#34404a !important;
+      box-shadow:0 24px 70px rgba(0,0,0,.40) !important;
+    }
+    html[data-effective-theme="dark"] .theme-panel-close,
+    html[data-effective-theme="dark"] .theme-choice-btn,
+    html[data-effective-theme="dark"] .theme-current{
+      background:#20272f !important;
+      border-color:#394550 !important;
+      color:#e5eaee !important;
+    }
+    html[data-effective-theme="dark"] .theme-choice-btn.active{
+      border-color:#b27d5b !important;
+      box-shadow:0 0 0 2px rgba(178,125,91,.20) !important;
+      background:#29323a !important;
+    }
+    html[data-effective-theme="dark"] .theme-panel-note,
+    html[data-effective-theme="dark"] .theme-choice-btn .theme-sub,
+    html[data-effective-theme="dark"] .theme-current{color:#a8b1bc !important}
+
+    /* 提示訊息 */
+    html[data-effective-theme="dark"] .toast{
+      background:#273039 !important;
+      color:#f0f3f5 !important;
+      box-shadow:0 10px 24px rgba(0,0,0,.34) !important;
+    }
+
 </style>
 </head>
 <body>
@@ -2893,7 +3315,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">V23.2.9.13 AI筆記＋iPhone／iPad手動外觀版</div>
+          <div class="brand-sub">V23.2.9.14 AI筆記＋iPhone／iPad手動外觀版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -6094,11 +6516,11 @@ setupThemeControls();
 setupLawReader();
 applyQuestionLawDeepLink();
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
-  navigator.serviceWorker.register("./sw.js?v=23.2.9.13").catch(()=>{})
+  navigator.serviceWorker.register("./sw.js?v=23.2.9.14").catch(()=>{})
 }
 </script>
 <script src="./firebase-config.js"></script>
-<script type="module" src="./firebase-sync.js?v=23.2.9.13"></script>
+<script type="module" src="./firebase-sync.js?v=23.2.9.14"></script>
 <div class="theme-sheet hidden" id="themeSheet" aria-hidden="true">
   <div class="theme-panel" role="dialog" aria-modal="true" aria-labelledby="themePanelTitle">
     <div class="theme-panel-head">
