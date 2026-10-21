@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <script>
-    // V23.2.9.14：支援「跟隨系統／一般模式／深色模式」手動切換
+    // V23.2.9.15：支援「跟隨系統／一般模式／深色模式」手動切換
     (()=>{
       const KEY="procurement_theme_mode_v1";
       const media=window.matchMedia?.("(prefers-color-scheme: dark)");
@@ -2602,7 +2602,7 @@
     
 
     /* =========================================================
-       V23.2.9.14 各章節未作答題目
+       V23.2.9.15 各章節未作答題目
        ========================================================= */
     .category-unanswered-bar{
       display:flex;
@@ -2762,7 +2762,7 @@
   
 
 
-    /* V23.2.9.14 手動外觀切換 */
+    /* V23.2.9.15 手動外觀切換 */
     .theme-open-btn{display:grid;place-items:center;font-size:18px;font-weight:900}
     .theme-sheet{
       position:fixed;inset:0;z-index:1200;display:flex;align-items:flex-end;justify-content:center;
@@ -2809,7 +2809,7 @@
 
 
     /* =========================================================
-       V23.2.9.14 收藏／錯題重練獨立版面
+       V23.2.9.15 收藏／錯題重練獨立版面
        ========================================================= */
     .review-entry-card{margin-top:14px}
     .review-entry-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}
@@ -2883,7 +2883,7 @@
 
 
     /* =========================================================
-       V23.2.9.14 舒適深色模式
+       V23.2.9.15 舒適深色模式
        中性藍灰底＋低飽和暖色點綴，降低長時間閱讀疲勞。
        ========================================================= */
     html[data-effective-theme="dark"]{
@@ -3315,7 +3315,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">V23.2.9.14 AI筆記＋iPhone／iPad手動外觀版</div>
+          <div class="brand-sub">V23.2.9.15 AI筆記＋iPhone／iPad手動外觀版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -4351,6 +4351,49 @@ let reviewCategory="all";
 let selectedAnswer=null;
 let answered=false;
 
+let renderedQuestionId=null;
+let renderedQuestionIndex=-1;
+let selectedAnswerQuestionId=null;
+let optionAnalysisLoadSeq=0;
+let geminiNoteLoadSeq=0;
+
+function isPracticeViewActive(){
+  return Boolean(document.getElementById("practiceView")?.classList.contains("active"))
+}
+
+function displayedQuestionId(){
+  return renderedQuestionId
+    ||document.getElementById("practiceView")?.dataset?.questionId
+    ||null
+}
+
+function displayedQuestion(){
+  const id=displayedQuestionId();
+  return id&&QMAP.has(id)?QMAP.get(id):currentQuestion()
+}
+
+function isDisplayedQuestion(questionId){
+  return String(displayedQuestionId()||"")===String(questionId||"")
+}
+
+function isAnswerPanelForQuestion(questionId){
+  const answerArea=document.getElementById("answerArea");
+  return isDisplayedQuestion(questionId)
+    &&String(answerArea?.dataset?.questionId||"")===String(questionId||"")
+}
+
+function alignSessionToDisplayedQuestion(persist=false){
+  if(!session||!Array.isArray(session.ids)||!renderedQuestionId)return false;
+  const idx=session.ids.indexOf(renderedQuestionId);
+  if(idx<0)return false;
+  if(session.index!==idx){
+    session={...session,index:idx,updatedAtMs:Date.now()};
+    localStorage.setItem(SESSION_KEY,JSON.stringify(session));
+    if(persist)window.firebaseQuizSync?.queueSessionSync?.(session)
+  }
+  return true
+}
+
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const labelType=t=>t==="choice"?"選擇題":"是非題";
@@ -4435,7 +4478,7 @@ function buildPlainQuestionText(q){
 }
 
 async function copyQuestionOnly(){
-  const q=currentQuestion();
+  const q=displayedQuestion();
   if(!q)return;
 
   const text=buildPlainQuestionText(q);
@@ -4495,7 +4538,7 @@ function buildAiQueryText(q){
 }
 
 async function openAiQuery(service){
-  const q=currentQuestion();
+  const q=displayedQuestion();
   if(!q)return;
 
   const queryText=buildAiQueryText(q);
@@ -4651,12 +4694,18 @@ function updateAnalysisSyncBadge(q){
 }
 
 async function loadOptionAnalysisEditsForQuestion(q){
+  const requestId=++optionAnalysisLoadSeq;
+  const questionId=String(q?.id||"");
   optionAnalysisEditCache={};
   const badge=document.getElementById("analysisSyncBadge");
-  if(badge)badge.textContent="讀取中…";
+  if(badge&&isAnswerPanelForQuestion(questionId))badge.textContent="讀取中…";
 
   try{
     const edits=await window.firebaseQuizSync?.getOptionAnalysisEdits?.(q.id);
+
+    // 上一題的非同步結果若較晚回來，不得覆蓋目前題目的答案解析。
+    if(requestId!==optionAnalysisLoadSeq||!isAnswerPanelForQuestion(questionId))return;
+
     optionAnalysisEditCache=edits&&typeof edits==="object"?edits:{};
 
     analysisKeysForQuestion(q).forEach(key=>{
@@ -4666,6 +4715,7 @@ async function loadOptionAnalysisEditsForQuestion(q){
     refreshMemoryAnalysis(q);
     updateAnalysisSyncBadge(q)
   }catch(error){
+    if(requestId!==optionAnalysisLoadSeq||!isAnswerPanelForQuestion(questionId))return;
     if(badge)badge.textContent="讀取失敗";
     console.warn(error)
   }
@@ -4679,7 +4729,7 @@ function setAnalysisBulkStatus(message,kind=""){
 }
 
 function openAnalysisBulkEditor(){
-  const q=currentQuestion();
+  const q=displayedQuestion();
   const editor=document.getElementById("analysisBulkEditor");
   if(!q||!editor)return;
 
@@ -4728,7 +4778,7 @@ function cancelAnalysisBulkEditor(){
 }
 
 function fillAnalysisBulkOriginals(){
-  const q=currentQuestion();
+  const q=displayedQuestion();
   if(!q)return;
 
   analysisKeysForQuestion(q).forEach(key=>{
@@ -4751,7 +4801,7 @@ function fillAnalysisBulkOriginals(){
 }
 
 async function saveAnalysisBulkEdits(){
-  const q=currentQuestion();
+  const q=displayedQuestion();
   const saveBtn=document.getElementById("analysisBulkSaveBtn");
   if(!q||!saveBtn)return;
 
@@ -4986,6 +5036,8 @@ function renderGeminiNotePanel(mode,note=null){
 }
 
 async function loadGeminiNoteForQuestion(questionId){
+  const requestId=++geminiNoteLoadSeq;
+  const requestedQuestionId=String(questionId||"");
   const loginHint=document.getElementById("geminiNoteLoginHint");
   geminiNoteUiState={questionId,note:null,mode:"loading"};
 
@@ -5001,12 +5053,21 @@ async function loadGeminiNoteForQuestion(questionId){
 
   try{
     const note=await window.firebaseQuizSync?.getGeminiNote?.(questionId);
+
+    // 題目已切換時，舊題筆記不得回填到新題畫面。
+    if(requestId!==geminiNoteLoadSeq
+      ||geminiNoteUiState.questionId!==questionId
+      ||!isAnswerPanelForQuestion(requestedQuestionId))return;
+
     if(note?.text){
       renderGeminiNotePanel("saved",note)
     }else{
       renderGeminiNotePanel("empty",null)
     }
   }catch(error){
+    if(requestId!==geminiNoteLoadSeq
+      ||geminiNoteUiState.questionId!==questionId
+      ||!isAnswerPanelForQuestion(requestedQuestionId))return;
     renderGeminiNotePanel("empty",null);
     setGeminiNoteStatus(
       `無法讀取筆記：${error?.message||"請稍後再試。"}`,
@@ -5079,7 +5140,7 @@ async function pasteGeminiNoteFromClipboard(){
 }
 
 async function saveCurrentGeminiNote(){
-  const q=currentQuestion();
+  const q=displayedQuestion();
   const area=document.getElementById("geminiNoteText");
   const button=document.getElementById("saveGeminiNoteBtn");
   if(!q||!area||!button)return;
@@ -5139,7 +5200,7 @@ async function saveCurrentGeminiNote(){
 }
 
 async function deleteCurrentGeminiNote(){
-  const q=currentQuestion();
+  const q=displayedQuestion();
   const button=document.getElementById("deleteGeminiNoteBtn");
   if(!q||!button)return;
 
@@ -5728,7 +5789,7 @@ function refreshCurrentJumpOption(q){
 }
 
 function clearSkipMarker(){
-  const q=currentQuestion();
+  const q=displayedQuestion();
   if(!q)return;
   const p=questionProgress(q);
   const skipped=Number(p.skipped||0);
@@ -5771,10 +5832,28 @@ function clearSkipMarker(){
 function renderQuestion(){
   const q=currentQuestion();
   if(!q){
+    renderedQuestionId=null;
+    renderedQuestionIndex=-1;
+    selectedAnswerQuestionId=null;
+    optionAnalysisLoadSeq++;
+    geminiNoteLoadSeq++;
     $("practiceView").innerHTML=`<div class="card"><h2>尚未開始練習</h2><p>請回首頁選擇主題後開始。</p><button class="primary-btn" onclick="showView('homeView')">回首頁</button></div>`;
     return
   }
-  selectedAnswer=null;answered=false;
+  renderedQuestionId=q.id;
+  renderedQuestionIndex=Number(session?.index)||0;
+  selectedAnswer=null;
+  selectedAnswerQuestionId=null;
+  answered=false;
+  optionAnalysisLoadSeq++;
+  geminiNoteLoadSeq++;
+  const practiceView=$("practiceView");
+  if(practiceView)practiceView.dataset.questionId=String(q.id);
+  const answerArea=$("answerArea");
+  if(answerArea){
+    answerArea.innerHTML="";
+    delete answerArea.dataset.questionId;
+  }
   const [status,cls]=statusInfo(q);
   $("questionStatus").textContent=status;$("questionStatus").className=`status ${cls}`;
   const randomMode=session?.scope==="random_all"
@@ -5799,8 +5878,9 @@ function renderQuestion(){
   $("options").innerHTML=opts.map(o=>`<button class="option-btn" data-key="${esc(o.key)}">
     <span class="option-key">${esc(o.key)}</span><span>${esc(o.text)}</span></button>`).join("");
   document.querySelectorAll(".option-btn").forEach(b=>b.addEventListener("click",()=>{
-    if(answered)return;
+    if(answered||!isDisplayedQuestion(q.id))return;
     selectedAnswer=b.dataset.key;
+    selectedAnswerQuestionId=q.id;
     document.querySelectorAll(".option-btn").forEach(x=>x.classList.toggle("selected",x===b))
   }));
   $("answerArea").innerHTML="";
@@ -5813,8 +5893,19 @@ function renderQuestion(){
   $("favoriteBtn").textContent=questionProgress(q).favorite?"★ 已收藏":"☆ 收藏"
 }
 function submitAnswer(){
-  const q=currentQuestion();if(!q)return;
+  const q=displayedQuestion();if(!q)return;
+
+  // 送出答案永遠以畫面上實際顯示的題目為準，避免背景同步改變 session.index。
+  alignSessionToDisplayedQuestion(true);
+
   if(selectedAnswer===null){toast("請先選擇答案");return}
+  if(String(selectedAnswerQuestionId||"")!==String(q.id)){
+    selectedAnswer=null;
+    selectedAnswerQuestionId=null;
+    toast("題目狀態已更新，請重新選擇答案");
+    renderQuestion();
+    return
+  }
   const isCorrect=String(selectedAnswer)===String(q.answer);
   const p=questionProgress(q);
   progress[q.id]={
@@ -5886,6 +5977,7 @@ function submitAnswer(){
     :String(q.answer);
 
   $("practiceView").classList.add("has-answer");
+  $("answerArea").dataset.questionId=String(q.id);
   $("answerArea").innerHTML=`
     <section class="answer-panel">
       <div class="answer-mascot">🐶</div>
@@ -6132,8 +6224,9 @@ function submitAnswer(){
   setTimeout(()=>$("answerArea").scrollIntoView({behavior:"smooth",block:"start"}),80)
 }
 function skipQuestion(){
-  const q=currentQuestion();
+  const q=displayedQuestion();
   if(!q||!session)return;
+  alignSessionToDisplayedQuestion(true);
 
   const p=questionProgress(q);
   progress[q.id]={
@@ -6164,6 +6257,7 @@ function skipQuestion(){
 
 function nextQuestion(){
   if(!session)return;
+  alignSessionToDisplayedQuestion(true);
   if(session.index>=session.ids.length-1){
     const randomCompletion=recordRandomCompletionIfNeeded();
     toast(randomCompletion
@@ -6174,11 +6268,13 @@ function nextQuestion(){
   session.index++;saveSession();renderQuestion();window.scrollTo({top:0,behavior:"smooth"})
 }
 function prevQuestion(){
-  if(!session||session.index===0)return;
+  if(!session)return;
+  alignSessionToDisplayedQuestion(true);
+  if(session.index===0)return;
   session.index--;saveSession();renderQuestion();window.scrollTo({top:0,behavior:"smooth"})
 }
 function toggleFavorite(){
-  const q=currentQuestion();if(!q)return;
+  const q=displayedQuestion();if(!q)return;
   const p=questionProgress(q);
   progress[q.id]={...p,favorite:!p.favorite,updatedAtMs:Date.now()};
   saveProgress();$("favoriteBtn").textContent=progress[q.id].favorite?"★ 已收藏":"☆ 收藏";
@@ -6504,8 +6600,19 @@ window.quizSyncBridge={
     if(document.getElementById("searchView")?.classList.contains("active"))runSearch()
   },
   getSession:()=>session?JSON.parse(JSON.stringify(session)):null,
+  isPracticeActive:()=>isPracticeViewActive(),
+  getDisplayedQuestionId:()=>displayedQuestionId(),
   replaceSession:(next)=>{
-    session=next&&typeof next==="object"?next:null;
+    const incoming=next&&typeof next==="object"?next:null;
+
+    // 正在作答時，以目前畫面題目為主，不允許背景同步悄悄換題。
+    if(isPracticeViewActive()&&displayedQuestionId()&&session){
+      alignSessionToDisplayedQuestion(false);
+      localStorage.setItem(SESSION_KEY,JSON.stringify(session));
+      return
+    }
+
+    session=incoming;
     localStorage.setItem(SESSION_KEY,JSON.stringify(session))
   },
   toast
@@ -6516,11 +6623,11 @@ setupThemeControls();
 setupLawReader();
 applyQuestionLawDeepLink();
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
-  navigator.serviceWorker.register("./sw.js?v=23.2.9.14").catch(()=>{})
+  navigator.serviceWorker.register("./sw.js?v=23.2.9.15").catch(()=>{})
 }
 </script>
 <script src="./firebase-config.js"></script>
-<script type="module" src="./firebase-sync.js?v=23.2.9.14"></script>
+<script type="module" src="./firebase-sync.js?v=23.2.9.15"></script>
 <div class="theme-sheet hidden" id="themeSheet" aria-hidden="true">
   <div class="theme-panel" role="dialog" aria-modal="true" aria-labelledby="themePanelTitle">
     <div class="theme-panel-head">
