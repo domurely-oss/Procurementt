@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <script>
-    // V23.2.9.15：支援「跟隨系統／一般模式／深色模式」手動切換
+    // V23.2.9.19：支援「跟隨系統／一般模式／深色模式」手動切換
     (()=>{
       const KEY="procurement_theme_mode_v1";
       const media=window.matchMedia?.("(prefers-color-scheme: dark)");
@@ -2602,7 +2602,7 @@
     
 
     /* =========================================================
-       V23.2.9.15 各章節未作答題目
+       V23.2.9.19 各章節未作答題目
        ========================================================= */
     .category-unanswered-bar{
       display:flex;
@@ -2762,7 +2762,7 @@
   
 
 
-    /* V23.2.9.15 手動外觀切換 */
+    /* V23.2.9.19 手動外觀切換 */
     .theme-open-btn{display:grid;place-items:center;font-size:18px;font-weight:900}
     .theme-sheet{
       position:fixed;inset:0;z-index:1200;display:flex;align-items:flex-end;justify-content:center;
@@ -2809,7 +2809,7 @@
 
 
     /* =========================================================
-       V23.2.9.15 收藏／錯題重練獨立版面
+       V23.2.9.19 收藏／錯題重練獨立版面
        ========================================================= */
     .review-entry-card{margin-top:14px}
     .review-entry-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}
@@ -2883,7 +2883,7 @@
 
 
     /* =========================================================
-       V23.2.9.15 舒適深色模式
+       V23.2.9.19 舒適深色模式
        中性藍灰底＋低飽和暖色點綴，降低長時間閱讀疲勞。
        ========================================================= */
     html[data-effective-theme="dark"]{
@@ -3302,7 +3302,348 @@
       box-shadow:0 10px 24px rgba(0,0,0,.34) !important;
     }
 
-</style>
+
+
+    /* =========================================================
+       V23.2.9.19 三群組隨機抽題美化
+       ========================================================= */
+    .random-group-card{
+      margin-top:14px;
+      padding:0;
+      overflow:hidden;
+      border:1px solid #dfd3c7;
+      background:linear-gradient(180deg,#fffdf9 0%,#fbf6f0 100%);
+      box-shadow:0 14px 34px rgba(96,65,43,.08);
+    }
+    .random-group-hero{
+      position:relative;
+      padding:20px 18px 17px;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at 100% 0%,rgba(255,255,255,.22),transparent 34%),
+        linear-gradient(135deg,#795239 0%,#94684b 52%,#a67b5d 100%);
+      color:#fff;
+    }
+    .random-group-hero::after{
+      content:"";
+      position:absolute;
+      right:-26px;
+      bottom:-42px;
+      width:140px;
+      height:140px;
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:50%;
+      box-shadow:0 0 0 24px rgba(255,255,255,.035),0 0 0 50px rgba(255,255,255,.025);
+      pointer-events:none;
+    }
+    .random-group-kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      margin-bottom:8px;
+      padding:5px 9px;
+      border:1px solid rgba(255,255,255,.22);
+      border-radius:999px;
+      background:rgba(255,255,255,.11);
+      color:#fff8f1;
+      font-size:9px;
+      font-weight:950;
+      letter-spacing:.12em;
+    }
+    .random-group-hero-title{
+      position:relative;
+      z-index:1;
+      margin:0;
+      font-size:21px;
+      font-weight:1000;
+      letter-spacing:.02em;
+    }
+    .random-group-hero-text{
+      position:relative;
+      z-index:1;
+      margin:7px 0 0;
+      max-width:720px;
+      color:rgba(255,255,255,.86);
+      font-size:11px;
+      line-height:1.75;
+    }
+    .random-group-guide{
+      position:relative;
+      z-index:1;
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:7px;
+      margin-top:14px;
+    }
+    .random-group-guide-item{
+      display:flex;
+      align-items:center;
+      gap:7px;
+      min-height:42px;
+      padding:8px 9px;
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:12px;
+      background:rgba(255,255,255,.095);
+      color:#fff;
+      font-size:9px;
+      font-weight:850;
+      line-height:1.35;
+    }
+    .random-group-guide-no{
+      display:grid;
+      place-items:center;
+      flex:0 0 24px;
+      width:24px;
+      height:24px;
+      border-radius:8px;
+      background:rgba(255,255,255,.18);
+      font-size:10px;
+      font-weight:1000;
+    }
+    .random-group-body{padding:14px}
+    .random-group-block{
+      position:relative;
+      overflow:hidden;
+      padding:14px;
+      border:1px solid #e2d8cf;
+      border-radius:18px;
+      background:#fff;
+      box-shadow:0 8px 22px rgba(77,53,37,.055);
+    }
+    .random-group-block + .random-group-block{margin-top:12px}
+    .random-group-block::before{
+      content:"";
+      position:absolute;
+      left:0;
+      top:0;
+      bottom:0;
+      width:4px;
+      background:var(--group-accent,#9a704f);
+    }
+    .random-group-block[data-group="group1"]{--group-accent:#9b6846;--group-soft:#fbf1e8;--group-ink:#74482e}
+    .random-group-block[data-group="group2"]{--group-accent:#4c8584;--group-soft:#edf7f5;--group-ink:#356665}
+    .random-group-block[data-group="group3"]{--group-accent:#71678f;--group-soft:#f3f0f8;--group-ink:#564d73}
+    .random-group-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .random-group-identity{display:flex;align-items:center;gap:10px;min-width:0}
+    .random-group-index{
+      display:grid;
+      place-items:center;
+      flex:0 0 40px;
+      width:40px;
+      height:40px;
+      border-radius:13px;
+      background:var(--group-soft);
+      color:var(--group-ink);
+      font-size:14px;
+      font-weight:1000;
+    }
+    .random-group-name{
+      color:#4d4036;
+      font-size:14px;
+      font-weight:1000;
+      line-height:1.25;
+    }
+    .random-group-subtitle{
+      margin-top:3px;
+      color:#918277;
+      font-size:9px;
+      font-weight:800;
+      line-height:1.35;
+    }
+    .random-group-total{
+      flex:0 0 auto;
+      padding:5px 8px;
+      border:1px solid #e6ddd5;
+      border-radius:999px;
+      background:#fbf8f4;
+      color:#76685d;
+      font-size:9px;
+      font-weight:900;
+      white-space:nowrap;
+    }
+    .random-group-categories{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      margin:0 0 12px;
+    }
+    .random-group-category-tag{
+      display:inline-flex;
+      align-items:center;
+      min-height:26px;
+      padding:5px 8px;
+      border:1px solid color-mix(in srgb,var(--group-accent) 20%,#e8dfd7);
+      border-radius:9px;
+      background:var(--group-soft);
+      color:var(--group-ink);
+      font-size:9px;
+      font-weight:850;
+      line-height:1.3;
+    }
+    .random-group-types{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:9px;
+    }
+    .random-group-type{
+      padding:11px;
+      border:1px solid #e5ddd5;
+      border-radius:14px;
+      background:#fcfaf7;
+    }
+    .random-group-type.tf{background:#f8fbfa;border-color:#dbe7e3}
+    .random-group-type-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-bottom:8px;
+    }
+    .random-group-type-identity{display:flex;align-items:center;gap:7px;min-width:0}
+    .random-group-type-icon{
+      display:grid;
+      place-items:center;
+      width:29px;
+      height:29px;
+      border-radius:9px;
+      background:#f0e4d8;
+      color:#714d35;
+      font-size:10px;
+      font-weight:1000;
+    }
+    .random-group-type.tf .random-group-type-icon{background:#e3f0ec;color:#3f6f63}
+    .random-group-type-title{color:#55483e;font-size:11px;font-weight:1000}
+    .random-group-type-count{color:#9a8c82;font-size:9px;font-weight:850;white-space:nowrap}
+    .random-group-three-split{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:6px;
+      margin-bottom:8px;
+      padding:7px 8px;
+      border-radius:10px;
+      background:#f6f1eb;
+      color:#7e6e62;
+      font-size:8px;
+      font-weight:850;
+    }
+    .random-group-type.tf .random-group-three-split{background:#eef6f3;color:#5c7b72}
+    .random-group-steps{display:flex;gap:5px;margin:0 0 8px}
+    .random-group-step{
+      height:5px;
+      flex:1;
+      border-radius:999px;
+      background:#e6dfd8;
+      overflow:hidden;
+    }
+    .random-group-step.done{background:var(--group-accent)}
+    .random-group-step.current{background:color-mix(in srgb,var(--group-accent) 45%,#e6dfd8)}
+    .random-group-draw-btn{
+      width:100%;
+      min-height:43px;
+      padding:9px 10px;
+      border:0;
+      border-radius:11px;
+      background:linear-gradient(135deg,var(--group-accent),color-mix(in srgb,var(--group-accent) 78%,#3e332d));
+      color:#fff;
+      font-size:10px;
+      font-weight:1000;
+      line-height:1.35;
+      cursor:pointer;
+      box-shadow:0 7px 16px color-mix(in srgb,var(--group-accent) 18%,transparent);
+      touch-action:manipulation;
+    }
+    .random-group-draw-btn:hover{filter:brightness(1.055)}
+    .random-group-draw-btn:active{transform:translateY(1px)}
+    .random-group-status{
+      margin-top:7px;
+      color:#9a8c82;
+      font-size:8px;
+      font-weight:800;
+      line-height:1.45;
+    }
+    .random-group-note{
+      margin-top:12px;
+      padding:10px 11px;
+      border:1px dashed #dccfc2;
+      border-radius:12px;
+      background:#fffaf5;
+      color:#806f61;
+      font-size:9px;
+      line-height:1.65;
+    }
+    @media(max-width:620px){
+      .random-group-hero{padding:18px 15px 15px}
+      .random-group-hero-title{font-size:19px}
+      .random-group-guide{grid-template-columns:1fr;gap:6px}
+      .random-group-guide-item{min-height:38px}
+      .random-group-body{padding:10px}
+      .random-group-block{padding:12px 11px}
+      .random-group-head{align-items:center}
+      .random-group-types{grid-template-columns:1fr}
+      .random-group-name{font-size:13px}
+      .random-group-category-tag{font-size:9px}
+      .random-group-draw-btn{min-height:47px;font-size:11px}
+    }
+
+    /* 舒適深色模式：三群組抽題 */
+    html[data-effective-theme="dark"] .random-group-card{
+      border-color:#35424a !important;
+      background:linear-gradient(180deg,#1c2429 0%,#182026 100%) !important;
+      box-shadow:0 16px 38px rgba(0,0,0,.22) !important;
+    }
+    html[data-effective-theme="dark"] .random-group-hero{
+      background:
+        radial-gradient(circle at 100% 0%,rgba(255,255,255,.08),transparent 36%),
+        linear-gradient(135deg,#33444d 0%,#3c5158 52%,#4b625f 100%) !important;
+    }
+    html[data-effective-theme="dark"] .random-group-block{
+      border-color:#36434b !important;
+      background:#202a30 !important;
+      box-shadow:0 8px 22px rgba(0,0,0,.14) !important;
+    }
+    html[data-effective-theme="dark"] .random-group-block[data-group="group1"]{--group-accent:#c58d68;--group-soft:#342b27;--group-ink:#e6b693}
+    html[data-effective-theme="dark"] .random-group-block[data-group="group2"]{--group-accent:#71aaa4;--group-soft:#243534;--group-ink:#9bd0ca}
+    html[data-effective-theme="dark"] .random-group-block[data-group="group3"]{--group-accent:#9e91bf;--group-soft:#2d2b38;--group-ink:#c6bde0}
+    html[data-effective-theme="dark"] .random-group-name{color:#eef1f2 !important}
+    html[data-effective-theme="dark"] .random-group-subtitle,
+    html[data-effective-theme="dark"] .random-group-type-count,
+    html[data-effective-theme="dark"] .random-group-status{color:#9eabb1 !important}
+    html[data-effective-theme="dark"] .random-group-total{
+      border-color:#3d4a51 !important;
+      background:#263139 !important;
+      color:#c4cdd1 !important;
+    }
+    html[data-effective-theme="dark"] .random-group-category-tag{
+      border-color:#3a464d !important;
+    }
+    html[data-effective-theme="dark"] .random-group-type{
+      border-color:#38454c !important;
+      background:#263139 !important;
+    }
+    html[data-effective-theme="dark"] .random-group-type.tf{
+      border-color:#344944 !important;
+      background:#243330 !important;
+    }
+    html[data-effective-theme="dark"] .random-group-type-title{color:#e7ecee !important}
+    html[data-effective-theme="dark"] .random-group-type-icon{background:#3c302a;color:#e8b58f}
+    html[data-effective-theme="dark"] .random-group-type.tf .random-group-type-icon{background:#29403b;color:#9dd1c5}
+    html[data-effective-theme="dark"] .random-group-three-split{background:#303a40;color:#b8c2c7}
+    html[data-effective-theme="dark"] .random-group-type.tf .random-group-three-split{background:#2b3c38;color:#a9c5bd}
+    html[data-effective-theme="dark"] .random-group-step{background:#3b474e}
+    html[data-effective-theme="dark"] .random-group-note{
+      border-color:#425059 !important;
+      background:#222c32 !important;
+      color:#abb7bd !important;
+    }
+
+  </style>
 </head>
 <body>
 <div class="app">
@@ -3315,7 +3656,7 @@
             政府採購題庫
             <span class="tablet-badge">iPad Air 11 吋最佳化</span>
           </div>
-          <div class="brand-sub">V23.2.9.15 AI筆記＋iPhone／iPad手動外觀版</div>
+          <div class="brand-sub">V23.2.9.19 AI筆記＋iPhone／iPad手動外觀版</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -3382,48 +3723,24 @@
             <button class="primary-btn" id="startBtn">▶ 練習此主題全部題目</button>
           </div>
 
-          <div class="card random-all-card">
-            <div class="section-title">全題庫隨機抽題</div>
-            <div class="random-all-intro">
-              不限主題，直接從全部 3,599 題中依題型隨機抽取；每 3 次抽題為一循環，系統會優先避免出現前 2 次已抽過的題目。
+          <div class="card random-group-card">
+            <div class="random-group-hero">
+              <div class="random-group-kicker">THREE-PASS REVIEW</div>
+              <h2 class="random-group-hero-title">三群組隨機抽題</h2>
+              <p class="random-group-hero-text">
+                依考試主題分成 3 個群組，選擇題與是非題會先依各主題分層，再各自切成 3 份。每一抽都保證包含群組內所有主題；同輪三抽完全不重複，第 3 抽完成後即涵蓋全部題目。
+              </p>
+              <div class="random-group-guide">
+                <div class="random-group-guide-item"><span class="random-group-guide-no">1</span><span>選擇群組與題型</span></div>
+                <div class="random-group-guide-item"><span class="random-group-guide-no">2</span><span>依序完成第 1～3 抽</span></div>
+                <div class="random-group-guide-item"><span class="random-group-guide-no">3</span><span>三抽完成＝全題覆蓋</span></div>
+              </div>
             </div>
-
-            <div class="random-pick-group">
-              <div class="random-pick-head">
-                <div class="random-pick-title">選擇題</div>
-                <div class="random-pick-available" id="randomChoiceAvailable"></div>
+            <div class="random-group-body">
+              <div id="randomGroupCards"></div>
+              <div class="random-group-note">
+                每一輪會先依「主題」分別洗牌並各自切成 3 份，再合併成三次抽題；因此每次都會抽到群組內所有主題。第 4 抽會重新分層洗牌並開始新一輪。
               </div>
-              <div class="random-count-buttons">
-                <button class="random-count-btn" type="button" data-random-all-type="choice" data-random-count="50">隨機抽 50 題</button>
-                <button class="random-count-btn" type="button" data-random-all-type="choice" data-random-count="100">隨機抽 100 題</button>
-                <button class="random-count-btn" type="button" data-random-all-type="choice" data-random-count="150">隨機抽 150 題</button>
-                <button class="random-count-btn" type="button" data-random-all-type="choice" data-random-count="200">隨機抽 200 題</button>
-                <button class="random-count-btn" type="button" data-random-all-type="choice" data-random-count="250">隨機抽 250 題</button>
-                <button class="random-count-btn" type="button" data-random-all-type="choice" data-random-count="300">隨機抽 300 題</button>
-                <button class="random-count-btn" type="button" data-random-all-type="choice" data-random-count="350">隨機抽 350 題</button>
-                <button class="random-count-btn" type="button" data-random-all-type="choice" data-random-count="400">隨機抽 400 題</button>
-              </div>
-              <div class="random-draw-stats" id="randomChoiceStats"></div>
-              <div class="random-repeat-note warning">三次都抽 50～300 題時可完整做到三抽不重複；選擇題共 913 題，若三次都抽 350 或 400 題，總需求超過 913 題，系統會先用未出現題目，再補入必要重複題。</div>
-            </div>
-
-            <div class="random-pick-group">
-              <div class="random-pick-head">
-                <div class="random-pick-title">是非題</div>
-                <div class="random-pick-available" id="randomTfAvailable"></div>
-              </div>
-              <div class="random-count-buttons">
-                <button class="random-count-btn tf" type="button" data-random-all-type="true_false" data-random-count="25">隨機抽 25 題</button>
-                <button class="random-count-btn tf" type="button" data-random-all-type="true_false" data-random-count="50">隨機抽 50 題</button>
-                <button class="random-count-btn tf" type="button" data-random-all-type="true_false" data-random-count="100">隨機抽 100 題</button>
-                <button class="random-count-btn tf" type="button" data-random-all-type="true_false" data-random-count="150">隨機抽 150 題</button>
-                <button class="random-count-btn tf" type="button" data-random-all-type="true_false" data-random-count="200">隨機抽 200 題</button>
-                <button class="random-count-btn tf" type="button" data-random-all-type="true_false" data-random-count="250">隨機抽 250 題</button>
-                <button class="random-count-btn tf" type="button" data-random-all-type="true_false" data-random-count="300">隨機抽 300 題</button>
-                <button class="random-count-btn tf" type="button" data-random-all-type="true_false" data-random-count="400">隨機抽 400 題</button>
-              </div>
-              <div class="random-draw-stats" id="randomTfStats"></div>
-              <div class="random-repeat-note">是非題共 2,686 題；目前 25～400 題的選項皆可完整做到同一個三抽循環內不重複。</div>
             </div>
           </div>
         </div>
@@ -3837,6 +4154,49 @@ const CATEGORIES=DATA.categories;
 const QMAP=new Map(QUESTIONS.map(q=>[q.id,q]));
 const STORAGE_KEY="procurementQuizProgressIphoneV1";
 const SESSION_KEY="procurementQuizSessionIphoneV1";
+
+const RANDOM_GROUP_DRAW_STATE_KEY="procurementQuizRandomGroupDrawStateV1";
+const RANDOM_GROUPS=[
+  {
+    id:"group1",
+    label:"群組 1",
+    title:"採購法核心流程",
+    subtitle:"從全生命週期、法規總則到履約、驗收與罰則",
+    categories:[
+      "政府採購全生命週期概論",
+      "政府採購法之總則、招標及決標",
+      "政府採購法之履約管理及驗收",
+      "政府採購法之罰則及附則"
+    ]
+  },
+  {
+    id:"group2",
+    label:"群組 2",
+    title:"採購實務與評選",
+    subtitle:"工程、財物勞務、最有利標與電子採購操作實務",
+    categories:[
+      "工程及技術服務採購作業",
+      "財物及勞務採購作業",
+      "最有利標及評選優勝廠商",
+      "電子採購實務"
+    ]
+  },
+  {
+    id:"group3",
+    label:"群組 3",
+    title:"文件、契約與風險",
+    subtitle:"錯誤態樣、招標文件、契約、底價、爭議與倫理",
+    categories:[
+      "錯誤採購態樣",
+      "投標須知及招標文件製作",
+      "採購契約",
+      "底價及價格分析",
+      "政府採購法之爭議處理",
+      "道德規範及違法處置"
+    ]
+  }
+];
+
 
 
 const LAW_MANIFEST=JSON.parse(document.getElementById("law-manifest-data")?.textContent||'{"batches":[]}');
@@ -4300,8 +4660,34 @@ function randomDrawStatusText(type){
 }
 
 function recordRandomCompletionIfNeeded(){
-  if(!session||session.scope!=="random_all")return null;
+  if(!session||!['random_all','random_group'].includes(session.scope))return null;
   if(session.index<session.ids.length-1)return null;
+
+  if(session.scope==='random_group'){
+    const state=randomGroupTypeState(session.randomGroupId,session.type);
+    if(!session.randomCompletionRecorded){
+      state.completedCount=(state.completedCount||0)+1;
+      session.randomCompletionRecorded=true;
+      session.randomCompletedCount=state.completedCount;
+      session.randomCompletedAtMs=Date.now();
+      saveRandomGroupDrawState();
+      saveSession();
+      renderRandomGroupCards()
+    }
+    return {
+      scope:'random_group',
+      type:session.type,
+      groupId:session.randomGroupId,
+      groupLabel:session.randomGroupLabel||'群組',
+      drawNo:Number(session.randomDrawNo)||0,
+      completedCount:Number(session.randomCompletedCount)||state.completedCount||0,
+      cycleNo:Number(session.randomCycleNo)||1,
+      cyclePart:Number(session.randomCyclePart)||1,
+      repeatCount:0,
+      count:Number(session.randomCount)||session.ids.length,
+      poolSize:Number(session.randomGroupPoolSize)||0
+    }
+  }
 
   const state=randomTypeState(session.type);
 
@@ -4316,6 +4702,7 @@ function recordRandomCompletionIfNeeded(){
   }
 
   return {
+    scope:'random_all',
     type:session.type,
     drawNo:Number(session.randomDrawNo)||0,
     completedCount:Number(session.randomCompletedCount)||state.completedCount||0,
@@ -4328,6 +4715,15 @@ function recordRandomCompletionIfNeeded(){
 function renderRandomCompletionBanner(info){
   if(!info)return "";
   const typeLabel=info.type==="choice"?"選擇題":"是非題";
+
+  if(info.scope==="random_group"){
+    return `<div class="random-completion-banner">
+      <div class="random-completion-title">✓ ${esc(info.groupLabel)}第 ${info.drawNo} 次抽題已完成</div>
+      <div class="random-completion-meta">${typeLabel} ${info.count.toLocaleString()} 題・本輪第 ${info.cyclePart}／3 抽・累計完成 ${info.completedCount} 次</div>
+      <div class="random-completion-meta">同一輪三抽彼此完全不重複；完成第 3 抽後即涵蓋本群組此題型全部 ${Number(info.poolSize).toLocaleString()} 題。</div>
+    </div>`
+  }
+
   const repeatHtml=info.repeatCount>0
     ?`<div class="random-completion-warning">本輪因題庫剩餘未出現題數不足，本次有 ${info.repeatCount} 題為必要重複；其餘題目仍優先使用本輪未出現題目。</div>`
     :`<div class="random-completion-meta">本次與同一個三抽循環中前面的抽題沒有重複。</div>`;
@@ -4337,6 +4733,360 @@ function renderRandomCompletionBanner(info){
     <div class="random-completion-meta">${typeLabel} ${info.count} 題・三抽循環第 ${info.cycleNo}／3 次・累計完成 ${info.completedCount} 次</div>
     ${repeatHtml}
   </div>`
+}
+
+
+function randomGroupConfig(groupId){
+  return RANDOM_GROUPS.find(group=>group.id===groupId)||null
+}
+
+function randomGroupPool(groupId,type){
+  const group=randomGroupConfig(groupId);
+  if(!group)return [];
+  const categories=new Set(group.categories);
+  return QUESTIONS.filter(q=>q.type===type&&categories.has(q.category)).map(q=>q.id)
+}
+
+function randomGroupPartSizes(total){
+  const base=Math.floor(total/3);
+  const remainder=total%3;
+  return [0,1,2].map(i=>base+(i<remainder?1:0))
+}
+
+function blankRandomGroupTypeState(){
+  return {
+    startedCount:0,
+    completedCount:0,
+    cycleNo:0,
+    nextPart:0,
+    poolSignature:"",
+    strategyVersion:"",
+    partitions:[]
+  }
+}
+
+function normalizeRandomGroupDrawState(value){
+  const raw=value&&typeof value==="object"?value:{};
+  const out={};
+  for(const group of RANDOM_GROUPS){
+    out[group.id]={};
+    for(const type of ["choice","true_false"]){
+      const src=raw?.[group.id]?.[type]&&typeof raw[group.id][type]==="object"
+        ?raw[group.id][type]
+        :{};
+      out[group.id][type]={
+        startedCount:Number(src.startedCount)||0,
+        completedCount:Number(src.completedCount)||0,
+        cycleNo:Number(src.cycleNo)||0,
+        nextPart:Math.max(0,Math.min(3,Number(src.nextPart)||0)),
+        poolSignature:String(src.poolSignature||""),
+        strategyVersion:String(src.strategyVersion||""),
+        partitions:Array.isArray(src.partitions)
+          ?src.partitions.slice(0,3).map(part=>Array.isArray(part)?part.filter(id=>QMAP.has(id)):[])
+          :[]
+      }
+    }
+  }
+  return out
+}
+
+let randomGroupDrawState=normalizeRandomGroupDrawState(loadJSON(RANDOM_GROUP_DRAW_STATE_KEY,{}));
+
+function saveRandomGroupDrawState(){
+  localStorage.setItem(RANDOM_GROUP_DRAW_STATE_KEY,JSON.stringify(randomGroupDrawState))
+}
+
+function randomGroupTypeState(groupId,type){
+  if(!randomGroupDrawState[groupId])randomGroupDrawState[groupId]={};
+  if(!randomGroupDrawState[groupId][type])randomGroupDrawState[groupId][type]=blankRandomGroupTypeState();
+  return randomGroupDrawState[groupId][type]
+}
+
+function randomGroupPoolSignature(pool){
+  return [...pool].sort().join("|")
+}
+
+function randomGroupCategoryPools(groupId,type){
+  const group=randomGroupConfig(groupId);
+  if(!group)return [];
+  return group.categories.map(category=>({
+    category,
+    ids:QUESTIONS
+      .filter(q=>q.type===type&&q.category===category)
+      .map(q=>q.id)
+  }))
+}
+
+function randomGroupPartitionsCoverEveryCategory(groupId,type,partitions){
+  const group=randomGroupConfig(groupId);
+  if(!group||!Array.isArray(partitions)||partitions.length!==3)return false;
+  return partitions.every(part=>{
+    const covered=new Set(
+      (Array.isArray(part)?part:[])
+        .map(id=>QMAP.get(id)?.category)
+        .filter(Boolean)
+    );
+    return group.categories.every(category=>covered.has(category))
+  })
+}
+
+function buildRandomGroupCycle(groupId,type){
+  const state=randomGroupTypeState(groupId,type);
+  const pool=randomGroupPool(groupId,type);
+  const categoryPools=randomGroupCategoryPools(groupId,type);
+  if(!pool.length||!categoryPools.length)return null;
+
+  /*
+   * V23.2.9.19：各主題分層三抽
+   * 先將每個主題自己的題目洗牌，再各自分成三份。
+   * 因每個主題/題型至少有 3 題，所以每一抽都保證包含所有主題。
+   * 餘數題依目前三份總量較少者分配，使三抽題數仍維持約 1/3。
+   */
+  const partitions=[[],[],[]];
+  const targetSizes=randomGroupPartSizes(pool.length);
+  const orderedCategoryPools=shuffle([...categoryPools]);
+
+  for(const categoryPool of orderedCategoryPools){
+    const shuffledIds=shuffle([...(categoryPool.ids||[])]);
+    if(shuffledIds.length<3){
+      // 題庫未來若變更到不足 3 題，仍完整分配，但無法保證三抽皆出現。
+      shuffledIds.forEach((id,index)=>partitions[index%3].push(id));
+      continue
+    }
+
+    const base=Math.floor(shuffledIds.length/3);
+    const remainder=shuffledIds.length%3;
+    let offset=0;
+
+    for(let partIndex=0;partIndex<3;partIndex++){
+      partitions[partIndex].push(...shuffledIds.slice(offset,offset+base));
+      offset+=base
+    }
+
+    const extras=shuffledIds.slice(offset);
+    if(remainder>0){
+      const targetParts=[0,1,2].sort((a,b)=>{
+        const deficitA=targetSizes[a]-partitions[a].length;
+        const deficitB=targetSizes[b]-partitions[b].length;
+        return deficitB-deficitA||a-b
+      });
+      extras.forEach((id,index)=>partitions[targetParts[index]].push(id))
+    }
+  }
+
+  // 每一抽內再次洗牌，避免同主題題目成段出現。
+  for(let i=0;i<3;i++)partitions[i]=shuffle(partitions[i]);
+
+  state.cycleNo=(state.cycleNo||0)+1;
+  state.nextPart=0;
+  state.poolSignature=randomGroupPoolSignature(pool);
+  state.strategyVersion="category_stratified_v1";
+  state.partitions=partitions;
+  saveRandomGroupDrawState();
+  return state
+}
+
+function ensureRandomGroupCycle(groupId,type){
+  const pool=randomGroupPool(groupId,type);
+  if(!pool.length)return null;
+  const signature=randomGroupPoolSignature(pool);
+  const poolSet=new Set(pool);
+  let state=randomGroupTypeState(groupId,type);
+  const flat=Array.isArray(state.partitions)?state.partitions.flat():[];
+  const validPartitions=Array.isArray(state.partitions)
+    &&state.partitions.length===3
+    &&flat.length===pool.length
+    &&new Set(flat).size===pool.length
+    &&flat.every(id=>poolSet.has(id))
+    &&state.strategyVersion==="category_stratified_v1"
+    &&randomGroupPartitionsCoverEveryCategory(groupId,type,state.partitions);
+
+  if(!validPartitions||state.poolSignature!==signature||state.nextPart>=3){
+    state=buildRandomGroupCycle(groupId,type)
+  }
+  return state
+}
+
+function prepareRandomGroupDraw(groupId,type){
+  const group=randomGroupConfig(groupId);
+  if(!group)return null;
+  const state=ensureRandomGroupCycle(groupId,type);
+  if(!state)return null;
+
+  const partIndex=Math.max(0,Math.min(2,Number(state.nextPart)||0));
+  const ids=[...(state.partitions[partIndex]||[])];
+  if(!ids.length)return null;
+
+  state.nextPart=partIndex+1;
+  state.startedCount=(state.startedCount||0)+1;
+  const drawNo=state.startedCount;
+  saveRandomGroupDrawState();
+
+  return {
+    groupId,
+    groupLabel:group.label,
+    ids,
+    actual:ids.length,
+    drawNo,
+    cycleNo:state.cycleNo,
+    cyclePart:partIndex+1,
+    poolSize:state.partitions.flat().length,
+    partSizes:state.partitions.map(part=>part.length)
+  }
+}
+
+function randomGroupHasCurrentStratifiedCycle(groupId,type){
+  const pool=randomGroupPool(groupId,type);
+  const state=randomGroupTypeState(groupId,type);
+  return state.strategyVersion==="category_stratified_v1"
+    &&Array.isArray(state.partitions)
+    &&state.partitions.length===3
+    &&state.partitions.flat().length===pool.length
+    &&randomGroupPartitionsCoverEveryCategory(groupId,type,state.partitions)
+}
+
+function randomGroupNextDrawMeta(groupId,type){
+  const pool=randomGroupPool(groupId,type);
+  const state=randomGroupTypeState(groupId,type);
+  const hasCurrentPartitions=randomGroupHasCurrentStratifiedCycle(groupId,type);
+  const sizes=hasCurrentPartitions
+    ?state.partitions.map(part=>part.length)
+    :randomGroupPartSizes(pool.length);
+  const nextPart=hasCurrentPartitions&&state.nextPart<3
+    ?Math.max(0,state.nextPart||0)
+    :0;
+  return {
+    total:pool.length,
+    nextPart:nextPart+1,
+    nextCount:sizes[nextPart]||0,
+    sizes
+  }
+}
+
+function randomGroupStatusText(groupId,type){
+  const state=randomGroupTypeState(groupId,type);
+  const meta=randomGroupNextDrawMeta(groupId,type);
+  const hasCurrentPartitions=randomGroupHasCurrentStratifiedCycle(groupId,type);
+  const completedInCycle=hasCurrentPartitions?Math.max(0,Math.min(3,Number(state.nextPart)||0)):0;
+  const cycleText=completedInCycle>=3
+    ?"本輪已抽 3／3；下一抽開啟新一輪"
+    :`本輪已抽 ${completedInCycle}／3；下一抽第 ${meta.nextPart}／3`;
+  return `三抽 ${meta.sizes.join("／")} 題・已抽 ${state.startedCount||0} 次・已完成 ${state.completedCount||0} 次・${cycleText}`
+}
+
+function renderRandomGroupCards(){
+  const root=$("randomGroupCards");
+  if(!root)return;
+
+  root.innerHTML=RANDOM_GROUPS.map((group,groupIndex)=>{
+    const choiceTotal=randomGroupPool(group.id,"choice").length;
+    const tfTotal=randomGroupPool(group.id,"true_false").length;
+    const total=choiceTotal+tfTotal;
+    const tags=group.categories.map(category=>`<span class="random-group-category-tag">${esc(category)}</span>`).join("");
+
+    const typeBlock=(type,title,klass,icon)=>{
+      const meta=randomGroupNextDrawMeta(group.id,type);
+      const state=randomGroupTypeState(group.id,type);
+      const completedInCycle=randomGroupHasCurrentStratifiedCycle(group.id,type)
+        ?Math.max(0,Math.min(3,Number(state.nextPart)||0))
+        :0;
+      const steps=[0,1,2].map(index=>{
+        let cls="";
+        if(index<completedInCycle)cls="done";
+        else if(index===completedInCycle&&completedInCycle<3)cls="current";
+        return `<span class="random-group-step ${cls}"></span>`
+      }).join("");
+      const nextLabel=completedInCycle>=3
+        ?`開始新一輪・第 1／3 抽・${meta.nextCount.toLocaleString()} 題`
+        :`開始第 ${meta.nextPart}／3 抽・${meta.nextCount.toLocaleString()} 題`;
+      const status=completedInCycle>=3
+        ?`本輪 3／3 已完成・累計抽題 ${state.startedCount||0} 次・完成 ${state.completedCount||0} 次`
+        :`本輪 ${completedInCycle}／3・累計抽題 ${state.startedCount||0} 次・完成 ${state.completedCount||0} 次`;
+
+      return `<div class="random-group-type ${klass}">
+        <div class="random-group-type-head">
+          <div class="random-group-type-identity">
+            <span class="random-group-type-icon">${icon}</span>
+            <div class="random-group-type-title">${title}</div>
+          </div>
+          <div class="random-group-type-count">共 ${meta.total.toLocaleString()} 題</div>
+        </div>
+        <div class="random-group-three-split">
+          <span>三抽分配・每抽含全部主題</span>
+          <strong>${meta.sizes.map(n=>n.toLocaleString()).join(" ／ ")} 題</strong>
+        </div>
+        <div class="random-group-steps" aria-label="本輪三抽進度">${steps}</div>
+        <button class="random-group-draw-btn" type="button"
+                data-random-group-id="${group.id}" data-random-group-type="${type}">
+          ${nextLabel}
+        </button>
+        <div class="random-group-status">${status}</div>
+      </div>`
+    };
+
+    return `<section class="random-group-block" data-group="${group.id}">
+      <div class="random-group-head">
+        <div class="random-group-identity">
+          <div class="random-group-index">0${groupIndex+1}</div>
+          <div>
+            <div class="random-group-name">${esc(group.title||group.label)}</div>
+            <div class="random-group-subtitle">${esc(group.label)}・${esc(group.subtitle||"")}</div>
+          </div>
+        </div>
+        <div class="random-group-total">共 ${total.toLocaleString()} 題</div>
+      </div>
+      <div class="random-group-categories">${tags}</div>
+      <div class="random-group-types">
+        ${typeBlock("choice","選擇題","choice","選")}
+        ${typeBlock("true_false","是非題","tf","是")}
+      </div>
+    </section>`
+  }).join("")
+}
+
+function startRandomGroupPractice(groupId,type){
+  const group=randomGroupConfig(groupId);
+  const prepared=prepareRandomGroupDraw(groupId,type);
+  if(!group||!prepared){
+    toast("此群組目前沒有可抽取題目");
+    return
+  }
+
+  session={
+    category:`${group.label}｜${group.title||""}隨機抽題`,
+    type,
+    scope:"random_group",
+    order:"random",
+    randomGroupId:group.id,
+    randomGroupLabel:`${group.label}｜${group.title||""}`,
+    randomCount:prepared.actual,
+    randomDrawNo:prepared.drawNo,
+    randomCycleNo:prepared.cycleNo,
+    randomCyclePart:prepared.cyclePart,
+    randomGroupPoolSize:prepared.poolSize,
+    randomGroupPartSizes:prepared.partSizes,
+    randomCompletionRecorded:false,
+    ids:prepared.ids,
+    index:0
+  };
+
+  saveSession();
+  selectedAnswer=null;
+  answered=false;
+  renderRandomGroupCards();
+  showView("practiceView");
+  toast(`${group.label}｜${group.title||""}・${type==="choice"?"選擇題":"是非題"}・本輪第 ${prepared.cyclePart}/3 抽，共 ${prepared.actual} 題；每抽含全部主題・同輪三抽完全不重複`)
+}
+
+function bindRandomGroupPractice(){
+  const root=$("randomGroupCards");
+  if(!root)return;
+  root.addEventListener("click",event=>{
+    const btn=event.target.closest("[data-random-group-id][data-random-group-type]");
+    if(!btn||!root.contains(btn))return;
+    startRandomGroupPractice(btn.dataset.randomGroupId,btn.dataset.randomGroupType)
+  });
+  renderRandomGroupCards()
 }
 
 let progress=loadJSON(STORAGE_KEY,{});
@@ -5329,7 +6079,7 @@ function init(){
     renderRecords();
   }));
   $("startBtn").addEventListener("click",startPractice);
-  bindRandomAllPractice();
+  bindRandomGroupPractice();
   setupReviewHub();
   $("submitBtn").addEventListener("click",submitAnswer);
   $("skipBtn").addEventListener("click",skipQuestion);
@@ -5858,7 +6608,9 @@ function renderQuestion(){
   $("questionStatus").textContent=status;$("questionStatus").className=`status ${cls}`;
   const randomMode=session?.scope==="random_all"
     ?`<span class="random-mode-badge">全題庫隨機抽 ${session.randomCount||session.ids.length} 題${labelType(session.type)}</span><span class="random-draw-seq-badge">第 ${session.randomDrawNo||1} 次抽題・本輪第 ${session.randomCycleNo||1}/3 抽</span><br>`
-    :"";
+    :session?.scope==="random_group"
+      ?`<span class="random-mode-badge">${esc(session.randomGroupLabel||"群組")}・${labelType(session.type)}・本次 ${session.randomCount||session.ids.length} 題</span><span class="random-draw-seq-badge">第 ${session.randomDrawNo||1} 次抽題・本輪第 ${session.randomCyclePart||1}/3 抽</span><br>`
+      :"";
   const reviewModeMeta=practiceReviewMeta();
   $("quizMeta").innerHTML=`${randomMode}${reviewModeMeta}第 <strong>${session.index+1}</strong>／${session.ids.length} 題<br>${esc(q.category)}・${labelType(q.type)}・原題號 ${q.number}`;
   $("quizProgress").style.width=`${(session.index+1)/session.ids.length*100}%`;
@@ -6623,11 +7375,11 @@ setupThemeControls();
 setupLawReader();
 applyQuestionLawDeepLink();
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
-  navigator.serviceWorker.register("./sw.js?v=23.2.9.15").catch(()=>{})
+  navigator.serviceWorker.register("./sw.js?v=23.2.9.19").catch(()=>{})
 }
 </script>
 <script src="./firebase-config.js"></script>
-<script type="module" src="./firebase-sync.js?v=23.2.9.15"></script>
+<script type="module" src="./firebase-sync.js?v=23.2.9.19"></script>
 <div class="theme-sheet hidden" id="themeSheet" aria-hidden="true">
   <div class="theme-panel" role="dialog" aria-modal="true" aria-labelledby="themePanelTitle">
     <div class="theme-panel-head">
